@@ -6,4 +6,5 @@ public enum ProductCategory {
     TOYS,
     BOOKS,
     SPORTS_EQUIPMENT
+
 }

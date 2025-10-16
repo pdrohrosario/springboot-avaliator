@@ -3,6 +3,7 @@ package com.project.catalogservice.domain;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import com.project.catalogservice.domain.enums.ProductCategory;
 
 public class Product {
 
@@ -20,11 +21,8 @@ public class Product {
 
     private LocalDate createdAt;
 
-    public Product(Long id, String name, BigDecimal price, String description, ProductCategory category) {
-
-        if(name == null || name.trim().isEmpty() || name.length() > 50) {
-            throw new IllegalArgumentException("Name invalid");
-        }
+    private Product(Long id, String name, BigDecimal price, String description, ProductCategory category) {
+        validateName(name);
         validatePrice(price);
         this.id = id;
         this.name = name;
@@ -33,6 +31,16 @@ public class Product {
         this.category = category;
         this.status = ProductStatus.AVAILABLE;
         this.createdAt = LocalDate.now();
+    }
+
+    public static Product create(Long id, String name, BigDecimal price, String description, String category) {
+        return new Product(id, name, price, description, ProductCategory.valueOf(category));
+    }
+
+    private void validateName(String name) {
+        if(name == null || name.trim().isEmpty() || name.length() > 50) {
+            throw new IllegalArgumentException("Name invalid");
+        }
     }
 
     private void validatePrice(BigDecimal price) {
