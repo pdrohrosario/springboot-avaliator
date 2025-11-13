@@ -1,4 +1,4 @@
 package com.project.catalogservice.application.ports.output;
 
-public interface FindProductByPriceBetween {
+public interface FindById {
 }
