@@ -14,10 +14,12 @@ services:
       - app-network
 
   app:
-    build:
-      context: ./catalogservice
-      dockerfile: Dockerfile
+    image: catalogservice:latest
     container_name: catalogservice
+    restart: always
+    ports:
+      - "8080:8080"
+      - "5005:5005"
     depends_on:
       - postgres
     environment:
@@ -30,9 +32,10 @@ services:
       SPRING_JPA_DIALECT: org.hibernate.dialect.PostgreSQLDialect
       SPRING_FLYWAY_ENABLED: "true"
       SPRING_FLYWAY_LOCATIONS: classpath:db/migration
-      SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"   # ← adicionado
-    ports:
-      - "8080:8080"
+      SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
+      _JAVA_OPTIONS: >
+        -Xdebug
+        -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
     networks:
       - app-network
 
