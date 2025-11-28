@@ -18,12 +18,13 @@ services:
     container_name: catalogservice
     restart: always
     ports:
-      - "8080:8080"
-      - "5005:5005"
+      - "8081:8081"
+      - "5009:5009"
     depends_on:
       - postgres
     environment:
       SPRING_NAME: catalogservice
+      SERVER_PORT: 8081
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/avaliator
       SPRING_DATASOURCE_USERNAME: admin123
       SPRING_DATASOURCE_PASSWORD: admin123
@@ -35,7 +36,7 @@ services:
       SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
       _JAVA_OPTIONS: >
         -Xdebug
-        -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+        -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5009
     networks:
       - app-network
 
