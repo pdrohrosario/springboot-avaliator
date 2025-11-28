@@ -1,26 +1,19 @@
-# Build the application
-# ---------- Build da aplicação ----------
-FROM maven:3.9.5-eclipse-temurin-21 AS build
+FROM maven:3.9.7-eclipse-temurin-21-alpine AS build
+
 WORKDIR /app
 
-# Copia o pom.xml e baixa dependências
 COPY pom.xml .
-RUN mvn dependency:go-offline
-
-# Copia o código-fonte e compila
 COPY src ./src
-RUN mvn clean package -DskipTests
 
-# ---------- Imagem final ----------
-FROM eclipse-temurin:21-jre
+RUN mvn package
+
+FROM eclipse-temurin:21-jre-alpine
+
 WORKDIR /app
 
-# Copia o JAR gerado
-COPY --from=build /app/target/*.jar app.jar
+ARG JAR_FILE=target/*.jar
 
-# Expõe portas HTTP e de debug
-EXPOSE 8080
+COPY --from=build /app/${JAR_FILE} app.jar
+EXPOSE 8081
 
-# Sempre inicia com debug remoto ativo
 ENTRYPOINT ["sh", "-c", "java -version && java $JAVA_OPTS -jar /app/app.jar"]
-

@@ -4,8 +4,10 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 
+import com.project.catalogservice.application.ports.input.GetById;
 import com.project.catalogservice.infrastruct.input.response.ProductResponse;
 import com.project.catalogservice.infrastruct.output.repositories.ProductRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,9 @@ public class ProductControllerTest {
 
     @MockitoBean
     private CreateProduct createProduct;
+
+    @MockitoBean
+    private GetById getById;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -75,12 +80,50 @@ public class ProductControllerTest {
     @Test
     public void shouldReturnBadRequestWhenRequestIsMissing() throws Exception {
         // Act and Assert
-        mockMvc.perform(MockMvcRequestBuilders.post("/product/create")
+        String response = mockMvc.perform(MockMvcRequestBuilders.post("/product/create")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .accept(MediaType.APPLICATION_JSON)
+                                    .characterEncoding(StandardCharsets.UTF_8)
+                                    .content("{}"))
+                                    .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                                    .andReturn().getResponse().getContentAsString();
+
+        String messageFromValidation = objectMapper.readTree(response).get("message").asText();
+        Assertions.assertTrue(messageFromValidation.contains("Name is required"));
+        Assertions.assertTrue(messageFromValidation.contains("Category is required"));
+        Assertions.assertTrue(messageFromValidation.contains("Price is required"));
+    }
+
+    @Test
+    public void shouldReturnProductWhenIdisNotNull() throws Exception {
+        // Arrange
+        when(getById.execute(any())).thenReturn(product);
+
+        // Act and Assert
+        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/product/%d",product.getId()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .characterEncoding(StandardCharsets.UTF_8)
-                .content("{}"))
-        .andExpect(MockMvcResultMatchers.status().isBadRequest())
-        .andExpect(jsonPath("$.message").value("Name is required;Category is required;Price is required;"));
+                .characterEncoding(StandardCharsets.UTF_8))
+        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(jsonPath("$.id").value(response.id()))
+        .andExpect(jsonPath("$.name").value(response.name()))
+        .andExpect(jsonPath("$.price").value(response.price()))
+        .andExpect(jsonPath("$.description").value(response.description()))
+        .andExpect(jsonPath("$.category").value(response.category()));
     }
+
+    @Test
+    public void shouldNotReturnProductWhenIdNotExist() throws Exception {
+        // Arrange
+        when(getById.execute(any())).thenReturn(null);
+
+        // Act and Assert
+        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/product/%d",product.getId()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(jsonPath("$").doesNotExist());
+    }
+
 }
