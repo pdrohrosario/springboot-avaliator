@@ -25,7 +25,7 @@ public class CreateProductUseCase implements CreateProduct {
     public Product execute(ProductRequest request) {
         if(null != findByName.execute(request.name())){
             throw new ProductAlreadyExistsException(request.name());
-        };
+        }
         Product newProduct = Product.create(request.name(), request.price(), request.description(), request.category());
         return save.execute(newProduct);
     }

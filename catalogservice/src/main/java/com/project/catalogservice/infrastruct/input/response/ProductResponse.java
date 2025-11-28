@@ -17,4 +17,5 @@ public record ProductResponse(Long id, String name, BigDecimal price, String des
                 product.getCreatedAt()
         );
     }
+
 }
