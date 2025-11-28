@@ -2,10 +2,7 @@ package com.project.catalogservice.infrastruct.output.repositories;
 
 import com.project.catalogservice.application.ports.output.FindProductByName;
 import com.project.catalogservice.domain.Product;
-import com.project.catalogservice.infrastruct.output.entities.JpaProduct;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 public class FindProductByNameAdapter implements FindProductByName {
