@@ -6,6 +6,7 @@ import com.project.catalogservice.application.ports.useCases.CreateProductUseCas
 import com.project.catalogservice.domain.Product;
 import com.project.catalogservice.domain.ProductAlreadyExistsException;
 import com.project.catalogservice.infrastruct.input.request.ProductRequest;
+import com.project.catalogservice.infrastruct.input.response.ProductResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,10 +38,13 @@ public class CreateProductUseCaseTest {
 
     ProductRequest request;
 
+    ProductResponse response;
+
     @BeforeEach
     public void setup() {
         request = new ProductRequest(null, "Product 1", BigDecimal.valueOf(100), "Description 1", "ELECTRONICS");
         product = Product.fromEntity(1L, "Product 1", BigDecimal.valueOf(100), "Description 1", "ELECTRONICS", "AVAILABLE", LocalDate.now());
+        response = new ProductResponse(1L, "Product 1", BigDecimal.valueOf(100), "Description 1", "ELECTRONICS", "AVAILABLE", LocalDate.now());
     }
 
     @Test
@@ -49,11 +53,11 @@ public class CreateProductUseCaseTest {
         when(saveProduct.execute(any())).thenReturn(product);
 
        //act
-        Product productCreated = create.execute(request);
+        ProductResponse productCreated = create.execute(request);
 
        //assert
         assertNotNull(productCreated);
-        assertEquals(productCreated, product);
+        assertEquals(productCreated, response);
     }
 
     @Test
