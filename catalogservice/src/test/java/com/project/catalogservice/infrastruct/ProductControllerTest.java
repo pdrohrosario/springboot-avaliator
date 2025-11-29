@@ -3,8 +3,12 @@ package com.project.catalogservice.infrastruct;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.project.catalogservice.application.ports.input.GetById;
+import com.project.catalogservice.application.ports.input.ListAllProducts;
 import com.project.catalogservice.infrastruct.input.response.ProductResponse;
 import com.project.catalogservice.infrastruct.output.repositories.ProductRepository;
 import org.junit.jupiter.api.Assertions;
@@ -19,6 +23,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -40,6 +45,9 @@ public class ProductControllerTest {
 
     @MockitoBean
     private GetById getById;
+
+    @MockitoBean
+    private ListAllProducts listAllProducts;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -126,4 +134,35 @@ public class ProductControllerTest {
         .andExpect(jsonPath("$").doesNotExist());
     }
 
+    @Test
+    public void shouldReturnTenProductsWhenNoFilterAndPaginationApplied() throws Exception {
+        //Arrange
+        List<Product> productList = IntStream.range(0, 10)
+                .mapToObj(i -> Product.fromEntity((long) i, "Product" + i, BigDecimal.valueOf(10 + i), "Description" + i, "BOOKS", "AVAILABLE", LocalDate.now()))
+                .collect(Collectors.toList());
+
+        when(listAllProducts.execute()).thenReturn(productList);
+
+        // Act and Assert
+        mockMvc.perform(MockMvcRequestBuilders.get("/product/search-products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8))
+        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(jsonPath("$.length()").value(productList.size()));
+    }
+
+    @Test
+    public void shouldReturnEmptyListWhenNoProductsExist() throws Exception {
+        //Arrange
+        when(listAllProducts.execute()).thenReturn(List.of());
+
+        // Act and Assert
+        mockMvc.perform(MockMvcRequestBuilders.get("/product/search-products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8))
+        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(jsonPath("$.length()").value(0));
+    }
 }
