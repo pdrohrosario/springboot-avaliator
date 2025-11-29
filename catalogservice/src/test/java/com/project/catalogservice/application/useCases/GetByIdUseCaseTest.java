@@ -42,11 +42,11 @@ public class GetByIdUseCaseTest {
         when(find.execute(1L)).thenReturn(product);
 
        //act
-        Product productFounded = get.execute(1L);
+        ProductResponse productFounded = get.execute(1L);
 
        //assert
         assertNotNull(productFounded);
-        assertEquals(productFounded, product);
+        assertEquals(productFounded, response);
     }
 
     @Test
@@ -55,7 +55,7 @@ public class GetByIdUseCaseTest {
         when(find.execute(1L)).thenReturn(null);
 
         //act
-        Product productFounded = get.execute(1L);
+        ProductResponse productFounded = get.execute(1L);
 
         //assert
         assertNull(productFounded);
