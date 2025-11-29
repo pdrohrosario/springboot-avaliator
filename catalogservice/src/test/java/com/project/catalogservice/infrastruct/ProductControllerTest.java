@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.project.catalogservice.application.ports.input.GetById;
+import com.project.catalogservice.application.ports.input.GetProductById;
 import com.project.catalogservice.application.ports.input.ListAllProducts;
+import com.project.catalogservice.infrastruct.input.response.PaginatedResponse;
 import com.project.catalogservice.infrastruct.input.response.ProductResponse;
-import com.project.catalogservice.infrastruct.output.repositories.ProductRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,7 +44,7 @@ public class ProductControllerTest {
     private CreateProduct createProduct;
 
     @MockitoBean
-    private GetById getById;
+    private GetProductById getProductById;
 
     @MockitoBean
     private ListAllProducts listAllProducts;
@@ -105,7 +105,7 @@ public class ProductControllerTest {
     @Test
     public void shouldReturnProductWhenIdisNotNull() throws Exception {
         // Arrange
-        when(getById.execute(any())).thenReturn(response);
+        when(getProductById.execute(any())).thenReturn(response);
 
         // Act and Assert
         mockMvc.perform(MockMvcRequestBuilders.get(String.format("/product/%d",product.getId()))
@@ -123,7 +123,7 @@ public class ProductControllerTest {
     @Test
     public void shouldNotReturnProductWhenIdNotExist() throws Exception {
         // Arrange
-        when(getById.execute(any())).thenReturn(null);
+        when(getProductById.execute(any())).thenReturn(null);
 
         // Act and Assert
         mockMvc.perform(MockMvcRequestBuilders.get(String.format("/product/%d",product.getId()))
@@ -135,13 +135,15 @@ public class ProductControllerTest {
     }
 
     @Test
-    public void shouldReturnTenProductsWhenNoFilterAndPaginationApplied() throws Exception {
+    public void shouldReturnTenProducts() throws Exception {
         //Arrange
-        List<Product> productList = IntStream.range(0, 10)
-                .mapToObj(i -> Product.fromEntity((long) i, "Product" + i, BigDecimal.valueOf(10 + i), "Description" + i, "BOOKS", "AVAILABLE", LocalDate.now()))
+        List<ProductResponse> productList = IntStream.range(0, 10)
+                .mapToObj(i -> new ProductResponse((long) i, "Product" + i, BigDecimal.valueOf(10 + i), "Description" + i, "BOOKS", "AVAILABLE", LocalDate.now()))
                 .collect(Collectors.toList());
 
-        when(listAllProducts.execute()).thenReturn(productList);
+        PaginatedResponse<ProductResponse> paginatedResponse = new PaginatedResponse<>(productList, 1, false);
+
+        when(listAllProducts.execute()).thenReturn(paginatedResponse);
 
         // Act and Assert
         mockMvc.perform(MockMvcRequestBuilders.get("/product/search-products")
@@ -149,13 +151,15 @@ public class ProductControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8))
         .andExpect(MockMvcResultMatchers.status().isOk())
-        .andExpect(jsonPath("$.length()").value(productList.size()));
+        .andExpect(jsonPath("$.items.size()").value(paginatedResponse.items().size()));
     }
 
     @Test
     public void shouldReturnEmptyListWhenNoProductsExist() throws Exception {
         //Arrange
-        when(listAllProducts.execute()).thenReturn(List.of());
+        PaginatedResponse<ProductResponse> emptyResponse = new PaginatedResponse<>(null, 0, false);
+
+        when(listAllProducts.execute()).thenReturn(emptyResponse);
 
         // Act and Assert
         mockMvc.perform(MockMvcRequestBuilders.get("/product/search-products")
@@ -163,6 +167,7 @@ public class ProductControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8))
         .andExpect(MockMvcResultMatchers.status().isOk())
-        .andExpect(jsonPath("$.length()").value(0));
+        .andExpect(jsonPath("$.items").isEmpty())
+        .andExpect(jsonPath("$.hasNextPage").value("false"));
     }
 }
