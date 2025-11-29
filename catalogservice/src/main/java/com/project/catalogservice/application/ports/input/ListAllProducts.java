@@ -1,9 +1,8 @@
 package com.project.catalogservice.application.ports.input;
 
-import java.util.List;
-
-import com.project.catalogservice.domain.Product;
+import com.project.catalogservice.infrastruct.input.response.PaginatedResponse;
+import com.project.catalogservice.infrastruct.input.response.ProductResponse;
 
 public interface ListAllProducts {
-    List<Product> execute();
+    PaginatedResponse<ProductResponse> execute();
 }
