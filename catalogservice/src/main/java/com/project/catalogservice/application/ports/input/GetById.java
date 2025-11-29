@@ -1,7 +1,8 @@
 package com.project.catalogservice.application.ports.input;
 
 import com.project.catalogservice.domain.Product;
+import com.project.catalogservice.infrastruct.input.response.ProductResponse;
 
 public interface GetById {
-    Product execute(Long id);
+    ProductResponse execute(Long id);
 }

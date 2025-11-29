@@ -62,14 +62,14 @@ public class ProductControllerTest {
     public void setup() {
         request = new ProductRequest(null,"Laptop", BigDecimal.valueOf(99.99), "It is a new HP Laptop", "ELECTRONICS");
         product = Product.fromEntity( 1L,"Laptop", BigDecimal.valueOf(99.99), "It is a new HP Laptop", "ELECTRONICS", "AVAILABLE", LocalDate.now());
-        response = ProductResponse.fromDomain(product);
+        response = new ProductResponse(1L,"Laptop", BigDecimal.valueOf(99.99), "It is a new HP Laptop", "ELECTRONICS", "AVAILABLE", LocalDate.now());
     }
     
     @Test
     public void shouldCreateProductAndReturnSuccess() throws Exception {
         // Arrange
         String request = objectMapper.writeValueAsString(new ProductRequest(1L, "Laptop", BigDecimal.valueOf(99.99), "It is a new HP Laptop", "ELECTRONICS"));
-        when(createProduct.execute(any())).thenReturn(product);
+        when(createProduct.execute(any())).thenReturn(response);
 
         // Act and Assert
         mockMvc.perform(MockMvcRequestBuilders.post("/product/create")
@@ -105,7 +105,7 @@ public class ProductControllerTest {
     @Test
     public void shouldReturnProductWhenIdisNotNull() throws Exception {
         // Arrange
-        when(getById.execute(any())).thenReturn(product);
+        when(getById.execute(any())).thenReturn(response);
 
         // Act and Assert
         mockMvc.perform(MockMvcRequestBuilders.get(String.format("/product/%d",product.getId()))

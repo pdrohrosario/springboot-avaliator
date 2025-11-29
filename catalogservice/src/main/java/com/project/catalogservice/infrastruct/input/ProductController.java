@@ -30,13 +30,11 @@ public class ProductController {
 
     @PostMapping("/create")
     public ResponseEntity<ProductResponse> create(@RequestBody @Validated(ValidateCreate.class) ProductRequest request) {
-        Product createdProduct = createProduct.execute(request);
-        return new ResponseEntity<>(ProductResponse.fromDomain(createdProduct), HttpStatus.CREATED);
+        return new ResponseEntity<>(createProduct.execute(request), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getById(@PathVariable @Valid @NotNull(message = "ProductID is required") Long id) {
-        Product product= getById.execute(id);
-        return new ResponseEntity<>(product != null ? ProductResponse.fromDomain(product) : null, HttpStatus.OK);
+        return new ResponseEntity<>(getById.execute(id), HttpStatus.OK);
     }
 }
