@@ -3,6 +3,7 @@ package com.project.catalogservice.application.ports.useCases;
 import com.project.catalogservice.application.ports.input.GetById;
 import com.project.catalogservice.application.ports.output.FindById;
 import com.project.catalogservice.domain.Product;
+import com.project.catalogservice.infrastruct.input.response.ProductResponse;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,7 +16,7 @@ public class GetByIdUseCase implements GetById {
     }
 
     @Override
-    public Product execute(Long id) {
-        return find.execute(id);
+    public ProductResponse execute(Long id) {
+        return ProductResponse.fromDomain(find.execute(id));
     }
 }
