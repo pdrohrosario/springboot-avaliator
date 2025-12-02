@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.project.catalogservice.application.ports.input.GetProductById;
-import com.project.catalogservice.application.ports.input.ListAllProducts;
+import com.project.catalogservice.application.ports.input.GetProductsByNameAndDescription;
 import com.project.catalogservice.infrastruct.input.response.PaginatedResponse;
 import com.project.catalogservice.infrastruct.input.response.ProductResponse;
 import org.junit.jupiter.api.Assertions;
@@ -23,9 +23,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -47,7 +47,7 @@ public class ProductControllerTest {
     private GetProductById getProductById;
 
     @MockitoBean
-    private ListAllProducts listAllProducts;
+    private GetProductsByNameAndDescription getProductsByNameAndDescription;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -77,7 +77,7 @@ public class ProductControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8)
                 .content(request))
-        .andExpect(MockMvcResultMatchers.status().isCreated())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(response.id()))
         .andExpect(jsonPath("$.name").value(response.name()))
         .andExpect(jsonPath("$.price").value(response.price()))
@@ -93,7 +93,7 @@ public class ProductControllerTest {
                                     .accept(MediaType.APPLICATION_JSON)
                                     .characterEncoding(StandardCharsets.UTF_8)
                                     .content("{}"))
-                                    .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                                    .andExpect(status().isBadRequest())
                                     .andReturn().getResponse().getContentAsString();
 
         String messageFromValidation = objectMapper.readTree(response).get("message").asText();
@@ -112,7 +112,7 @@ public class ProductControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8))
-        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(response.id()))
         .andExpect(jsonPath("$.name").value(response.name()))
         .andExpect(jsonPath("$.price").value(response.price()))
@@ -130,27 +130,27 @@ public class ProductControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8))
-        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(status().isOk())
         .andExpect(jsonPath("$").doesNotExist());
     }
 
     @Test
-    public void shouldReturnTenProducts() throws Exception {
+    public void shouldReturnTenProductWithSuccess() throws Exception {
         //Arrange
         List<ProductResponse> productList = IntStream.range(0, 10)
-                .mapToObj(i -> new ProductResponse((long) i, "Product" + i, BigDecimal.valueOf(10 + i), "Description" + i, "BOOKS", "AVAILABLE", LocalDate.now()))
+                .mapToObj(i -> new ProductResponse((long) i, "Book " + i, BigDecimal.valueOf(10 + i), "A new book " + i, "BOOKS", "AVAILABLE", LocalDate.now()))
                 .collect(Collectors.toList());
 
         PaginatedResponse<ProductResponse> paginatedResponse = new PaginatedResponse<>(productList, 1, false);
 
-        when(listAllProducts.execute()).thenReturn(paginatedResponse);
+        when(getProductsByNameAndDescription.execute(any(),any(),any())).thenReturn(paginatedResponse);
 
         // Act and Assert
-        mockMvc.perform(MockMvcRequestBuilders.get("/product/search-products")
+        mockMvc.perform(MockMvcRequestBuilders.get("/product/get-products?name=Book&description=new%book&page=0&size=10&sort=name")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8))
-        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(status().isOk())
         .andExpect(jsonPath("$.items.size()").value(paginatedResponse.items().size()));
     }
 
@@ -159,14 +159,14 @@ public class ProductControllerTest {
         //Arrange
         PaginatedResponse<ProductResponse> emptyResponse = new PaginatedResponse<>(null, 0, false);
 
-        when(listAllProducts.execute()).thenReturn(emptyResponse);
+        when(getProductsByNameAndDescription.execute(any(), any(), any())).thenReturn(emptyResponse);
 
         // Act and Assert
-        mockMvc.perform(MockMvcRequestBuilders.get("/product/search-products")
+        mockMvc.perform(MockMvcRequestBuilders.get("/product/get-products?name=Book&description=new%book&page=0&size=10&sort=name")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8))
-        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(status().isOk())
         .andExpect(jsonPath("$.items").isEmpty())
         .andExpect(jsonPath("$.hasNextPage").value("false"));
     }

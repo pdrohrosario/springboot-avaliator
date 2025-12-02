@@ -1,11 +1,11 @@
 package com.project.catalogservice.infrastruct.input;
 
 import com.project.catalogservice.application.ports.input.GetProductById;
-import com.project.catalogservice.application.ports.input.ListAllProducts;
+import com.project.catalogservice.application.ports.input.GetProductsByNameAndDescription;
 import com.project.catalogservice.domain.validators.ValidateCreate;
-import com.project.catalogservice.infrastruct.input.request.ProductFilterRequest;
 import com.project.catalogservice.infrastruct.input.response.PaginatedResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -27,12 +27,12 @@ public class ProductController {
 
     private final GetProductById getProductById;
 
-    private final ListAllProducts listAllProducts;
+    private final GetProductsByNameAndDescription getProductsByNameAndDescription;
 
-    public ProductController(CreateProduct createProduct, GetProductById getProductById, ListAllProducts listAllProducts) {
+    public ProductController(CreateProduct createProduct, GetProductById getProductById, GetProductsByNameAndDescription getProductsByNameAndDescription) {
         this.createProduct = createProduct;
         this.getProductById = getProductById;
-        this.listAllProducts = listAllProducts;
+        this.getProductsByNameAndDescription = getProductsByNameAndDescription;
     }
 
     @PostMapping("/create")
@@ -45,8 +45,13 @@ public class ProductController {
         return new ResponseEntity<>(getProductById.execute(id), HttpStatus.OK);
     }
 
-    @GetMapping("/search-products")
-    public ResponseEntity<PaginatedResponse<ProductResponse>> searchProducts(ProductFilterRequest filter, @PageableDefault(size = 10, page = 0,sort = "name") Pageable pageable) {
-        return new ResponseEntity<>(listAllProducts.execute(),HttpStatus.OK);
+    @GetMapping("/get-products")
+    public ResponseEntity<PaginatedResponse<ProductResponse>> getByNameAndDescription(
+            @RequestParam(name = "name")
+            String name,
+            @RequestParam(name = "description")
+            String description, @PageableDefault(size = 10, page = 0, sort = "name") Pageable pageable) {
+        PaginatedResponse<ProductResponse> response = getProductsByNameAndDescription.execute(name, description, pageable);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
