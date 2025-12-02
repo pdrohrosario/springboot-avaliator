@@ -51,8 +51,6 @@ public class GetProductByIdUseCaseTest {
 
     @Test
     void shouldNotFindProductByIdWhenProductNotExist() {
-        //arrange
-        when(find.execute(1L)).thenReturn(null);
 
         //act
         ProductResponse productFounded = get.execute(1L);
