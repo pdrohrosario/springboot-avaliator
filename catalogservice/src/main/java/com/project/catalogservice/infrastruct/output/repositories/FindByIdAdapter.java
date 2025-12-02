@@ -2,6 +2,7 @@ package com.project.catalogservice.infrastruct.output.repositories;
 
 import com.project.catalogservice.application.ports.output.FindById;
 import com.project.catalogservice.domain.Product;
+import com.project.catalogservice.infrastruct.input.response.ProductResponse;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,10 +15,9 @@ public class FindByIdAdapter implements FindById {
     }
 
     @Override
-    public Product execute(Long id) {
+    public ProductResponse execute(Long id) {
         return repository.findById(id)
-                .map(jpa -> Product.fromEntity(jpa.getId(), jpa.getName(), jpa.getPrice(), jpa.getDescription(),
-                        jpa.getCategory().name(), jpa.getStatus().name(), jpa.getCreatedAt()))
-                .orElse(null);
+                .map(ProductResponse::fromJpa
+                ).orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
     }
 }
