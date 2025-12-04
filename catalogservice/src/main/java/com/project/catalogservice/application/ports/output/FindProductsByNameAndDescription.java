@@ -1,7 +1,7 @@
 package com.project.catalogservice.application.ports.output;
 
-import com.project.catalogservice.infrastruct.input.response.PaginatedResponse;
-import com.project.catalogservice.infrastruct.input.response.ProductResponse;
+import com.project.catalogservice.infrastruct.product.input.response.PaginatedResponse;
+import com.project.catalogservice.infrastruct.product.input.response.ProductResponse;
 import org.springframework.data.domain.Pageable;
 
 

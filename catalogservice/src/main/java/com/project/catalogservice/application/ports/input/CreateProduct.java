@@ -1,9 +1,7 @@
 package com.project.catalogservice.application.ports.input;
 
-import com.project.catalogservice.domain.Product;
-import com.project.catalogservice.infrastruct.input.request.ProductRequest;
-import com.project.catalogservice.infrastruct.input.response.ProductResponse;
+import com.project.catalogservice.application.ports.output.CreateProductOutput;
 
 public interface CreateProduct {
-    ProductResponse execute(ProductRequest request);
+    CreateProductOutput execute(CreateProductInput input);
 }

@@ -2,7 +2,7 @@ package com.project.catalogservice.application.ports.useCases;
 
 import com.project.catalogservice.application.ports.input.GetProductById;
 import com.project.catalogservice.application.ports.output.FindById;
-import com.project.catalogservice.infrastruct.input.response.ProductResponse;
+import com.project.catalogservice.infrastruct.product.input.response.ProductResponse;
 import org.springframework.stereotype.Service;
 
 @Service

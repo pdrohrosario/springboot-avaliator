@@ -1,4 +1,4 @@
-package com.project.catalogservice.infrastruct.output.repositories;
+package com.project.catalogservice.infrastruct.product.input.output.repositories;
 
 import com.project.catalogservice.application.ports.output.FindProductByName;
 import com.project.catalogservice.domain.Product;

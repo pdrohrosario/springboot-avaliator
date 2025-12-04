@@ -1,7 +1,7 @@
 package com.project.catalogservice.application.ports.input;
 
-import com.project.catalogservice.infrastruct.input.response.ProductResponse;
+import com.project.catalogservice.application.ports.output.GetProductOutput;
 
 public interface GetProductById {
-    ProductResponse execute(Long id);
+    GetProductOutput execute(Long id);
 }

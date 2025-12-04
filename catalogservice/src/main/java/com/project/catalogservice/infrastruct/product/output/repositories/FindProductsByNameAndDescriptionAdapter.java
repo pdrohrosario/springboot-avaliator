@@ -1,8 +1,8 @@
-package com.project.catalogservice.infrastruct.output.repositories;
+package com.project.catalogservice.infrastruct.product.input.output.repositories;
 
 import com.project.catalogservice.application.ports.output.FindProductsByNameAndDescription;
-import com.project.catalogservice.infrastruct.input.response.PaginatedResponse;
-import com.project.catalogservice.infrastruct.input.response.ProductResponse;
+import com.project.catalogservice.infrastruct.product.input.response.PaginatedResponse;
+import com.project.catalogservice.infrastruct.product.input.response.ProductResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;

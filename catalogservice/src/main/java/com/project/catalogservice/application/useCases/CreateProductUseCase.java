@@ -4,8 +4,8 @@ import com.project.catalogservice.application.ports.input.CreateProduct;
 import com.project.catalogservice.application.ports.output.FindProductByName;
 import com.project.catalogservice.application.ports.output.SaveProduct;
 import com.project.catalogservice.domain.ProductAlreadyExistsException;
-import com.project.catalogservice.infrastruct.input.request.ProductRequest;
-import com.project.catalogservice.infrastruct.input.response.ProductResponse;
+import com.project.catalogservice.infrastruct.product.input.request.CreateProductRequest;
+import com.project.catalogservice.infrastruct.product.input.response.ProductResponse;
 import org.springframework.stereotype.Service;
 
 import com.project.catalogservice.domain.Product;
@@ -23,7 +23,7 @@ public class CreateProductUseCase implements CreateProduct {
     }
 
     @Override
-    public ProductResponse execute(ProductRequest request) {
+    public ProductResponse execute(CreateProductRequest request) {
         if(null != findByName.execute(request.name())){
             throw new ProductAlreadyExistsException(request.name());
         }
