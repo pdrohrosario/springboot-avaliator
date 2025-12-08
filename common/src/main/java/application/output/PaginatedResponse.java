@@ -1,4 +1,4 @@
-package com.project.catalogservice.infrastruct.product.input.response;
+package application.output;
 
 import java.util.List;
 
