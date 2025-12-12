@@ -1,4 +1,5 @@
 FROM maven:3.9.7-eclipse-temurin-21-alpine AS build
+FROM common
 
 WORKDIR /app
 
@@ -7,7 +8,7 @@ COPY src ./src
 
 RUN mvn package
 
-FROM eclipse-temurin:21-jre-alpine
+FROM common-avaliator:latest
 
 WORKDIR /app
 
