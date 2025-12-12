@@ -1,5 +1,5 @@
 CREATE TABLE product (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     price NUMERIC(15,2) NOT NULL,
     description TEXT,
