@@ -1,9 +1,13 @@
 package com.project.catalogservice.application.useCases;
 
-import com.project.catalogservice.application.ports.output.FindProductsByNameAndDescription;
-import com.project.catalogservice.application.ports.useCases.GetProductsByUsernameAndDescriptionUseCase;
-import com.project.catalogservice.infrastruct.input.response.PaginatedResponse;
-import com.project.catalogservice.infrastruct.input.response.ProductResponse;
+import com.project.catalogservice.product.application.input.GetProductsByNameAndDescriptionInput;
+import com.project.catalogservice.product.application.mapper.ProductUseCaseMapper;
+import com.project.catalogservice.product.application.output.GetProductOutput;
+import com.project.catalogservice.product.application.ports.output.FindProductsByNameAndDescription;
+import com.project.catalogservice.product.application.useCases.GetProductsByUsernameAndDescriptionUseCase;
+import com.project.catalogservice.product.common.output.PaginatedResponse;
+import com.project.catalogservice.product.domain.Product;
+import com.project.catalogservice.product.domain.ProductId;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,68 +34,55 @@ public class GetProductsByNameAndDescriptionUseCaseTest {
     @Mock
     private FindProductsByNameAndDescription findProductsByNameAndDescription;
 
-    PaginatedResponse<ProductResponse> paginatedResponse;
+    GetProductsByNameAndDescriptionInput input;
 
-    List<ProductResponse> bookList;
+    PaginatedResponse<GetProductOutput> paginatedGetProductOutput;
 
-    Page<ProductResponse> productsFound;
+    PaginatedResponse<Product> paginatedProducts;
 
     Pageable pageable;
 
     @BeforeEach
     public void setup() {
-        bookList = IntStream.range(0,10)
-                .mapToObj(i -> new ProductResponse(Integer.toUnsignedLong(i),"Book " + i, BigDecimal.TEN,"new book " + i, "BOOKS" , "AVALIABE" ,LocalDate.now()))
+        List<Product> productList = IntStream.range(0,10)
+                .mapToObj(i -> Product.fromEntity(ProductId.generate(),"Book " + i, BigDecimal.TEN,"new book " + i, "BOOKS" , "AVALIABE" ,LocalDate.now()))
                 .toList();
 
         pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
 
-        productsFound = new PageImpl<>(bookList, pageable, bookList.size());
+        paginatedProducts = new PaginatedResponse<>(productList, pageable.getPageNumber(), false);
 
-        paginatedResponse = new PaginatedResponse<>(bookList, pageable.getPageNumber(), false);
+        paginatedGetProductOutput = new PaginatedResponse<>(productList.stream().map(ProductUseCaseMapper::toGetOutput).toList(), pageable.getPageNumber(), false);
 
+        input = new GetProductsByNameAndDescriptionInput("Book","new book", pageable.getPageNumber(), pageable.getPageSize(), "name");
     }
 
     @Test
     void shouldReturnListWith10ProductsWithSuccess() {
         //arrange
-
-        when(findProductsByNameAndDescription.execute(any(), any(), any())).thenReturn(paginatedResponse);
+        when(findProductsByNameAndDescription.execute(any())).thenReturn(paginatedProducts);
 
         //act
-        paginatedResponse = getProductsByNameAndDescription.execute("Book","new book", pageable);
+        PaginatedResponse<GetProductOutput> response = getProductsByNameAndDescription.execute(input);
 
         //assert
-        Assertions.assertEquals(paginatedResponse.items().size(), bookList.size());
-        Assertions.assertFalse(paginatedResponse.hasNextPage());
-        Assertions.assertEquals(paginatedResponse.currentPage(), pageable.getPageNumber());
+        Assertions.assertEquals(response.items().size(), paginatedGetProductOutput.items().size());
+        Assertions.assertFalse(response.hasNextPage());
+        Assertions.assertEquals(response.currentPage(), pageable.getPageNumber());
     }
 
     @Test
     void shouldReturnEmptyListWhenNoProductsExist() {
         //arrange
-        paginatedResponse = new PaginatedResponse<>(List.of(), pageable.getPageNumber(), false);
-        when(findProductsByNameAndDescription.execute(any(), any(), any())).thenReturn(paginatedResponse);
+        paginatedProducts = new PaginatedResponse<>(List.of(), pageable.getPageNumber(), false);
+        when(findProductsByNameAndDescription.execute(any())).thenReturn(paginatedProducts);
 
         //act
-        paginatedResponse = getProductsByNameAndDescription.execute("Book","new book", pageable);
+        PaginatedResponse<GetProductOutput> response = getProductsByNameAndDescription.execute(input);
 
         //assert
-        Assertions.assertEquals(0, paginatedResponse.items().size());
-        Assertions.assertFalse(paginatedResponse.hasNextPage());
-    }
-
-    @Test
-    void shouldReturnTenProductWhenPageableIsNull() {
-        //arrange
-        when(findProductsByNameAndDescription.execute(any(), any(), any())).thenReturn(paginatedResponse);
-
-        //act
-        paginatedResponse = getProductsByNameAndDescription.execute("Book","new book", null);
-
-        //assert
-        Assertions.assertEquals(10, paginatedResponse.items().size());
-        Assertions.assertFalse(paginatedResponse.hasNextPage());
+        Assertions.assertEquals(0, response.items().size());
+        Assertions.assertFalse(response.hasNextPage());
     }
 
 }
