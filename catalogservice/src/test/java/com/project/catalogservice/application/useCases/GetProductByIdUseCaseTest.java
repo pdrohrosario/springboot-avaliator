@@ -6,6 +6,8 @@ import com.project.catalogservice.product.application.ports.output.FindById;
 import com.project.catalogservice.product.application.useCases.GetProductByIdUseCase;
 import com.project.catalogservice.product.domain.Product;
 import com.project.catalogservice.product.domain.ProductId;
+import com.project.catalogservice.product.domain.ProductNotFound;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,11 +58,16 @@ public class GetProductByIdUseCaseTest {
 
     @Test
     void shouldNotFindProductByIdWhenProductNotExist() {
+        //arrange
+        ProductId productId = ProductId.generate();
 
         //act
-        GetProductOutput productFounded = get.execute(ProductId.generate().getValue());
+        ProductNotFound exception = assertThrows(
+                ProductNotFound.class,
+                () -> get.execute(productId.getValue())
+        );
 
         //assert
-        assertNull(productFounded);
+        assertEquals(String.format("Not found a Product with id: %s", productId.getValue()), exception.getMessage());
     }
 }
