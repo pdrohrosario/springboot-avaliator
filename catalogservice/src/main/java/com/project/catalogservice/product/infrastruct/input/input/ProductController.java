@@ -43,7 +43,7 @@ public class ProductController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<CreateProductResponse> create(@RequestBody CreateProductRequest request) {
+    public ResponseEntity<CreateProductResponse> create(@Valid @RequestBody CreateProductRequest request) {
         CreateProductOutput output = createProduct.execute(ProductControllerMapper.toInput(request));
         return new ResponseEntity<>(ProductControllerMapper.toResponse(output), HttpStatus.CREATED);
     }
