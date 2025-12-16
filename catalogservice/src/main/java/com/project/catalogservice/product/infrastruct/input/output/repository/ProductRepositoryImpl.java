@@ -6,9 +6,11 @@ import com.project.catalogservice.product.domain.ProductId;
 import com.project.catalogservice.product.domain.ProductRepository;
 import com.project.catalogservice.product.infrastruct.input.output.entities.JpaProduct;
 import com.project.catalogservice.product.infrastruct.input.output.mapper.ProductPersistenceMapper;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+@Component
 public class ProductRepositoryImpl implements ProductRepository {
 
     private final JpaProductRepository repository;
