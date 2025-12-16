@@ -11,7 +11,9 @@ import com.project.catalogservice.product.application.output.GetProductOutput;
 import com.project.catalogservice.product.application.ports.input.GetProductById;
 import com.project.catalogservice.product.application.ports.input.GetProductsByNameAndDescription;
 import com.project.catalogservice.product.common.output.PaginatedResponse;
+import com.project.catalogservice.product.domain.ProductAlreadyExistsException;
 import com.project.catalogservice.product.domain.ProductId;
+import com.project.catalogservice.product.domain.ProductNotFound;
 import com.project.catalogservice.product.infrastruct.input.input.mapper.ProductControllerMapper;
 import com.project.catalogservice.product.infrastruct.input.input.request.UpdateProductRequest;
 import com.project.catalogservice.product.infrastruct.input.input.response.CreateProductResponse;
@@ -140,15 +142,18 @@ public class ProductControllerTest {
     @Test
     public void shouldNotReturnProductWhenIdNotExist() throws Exception {
         // Arrange
-        when(getProductById.execute(any())).thenReturn(null);
+        ProductId productId = ProductId.generate();
+        when(getProductById.execute(any())).thenThrow(new ProductNotFound(productId.getValue()));
 
         // Act and Assert
-        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/product/%d",1L))
+        String response = mockMvc.perform(MockMvcRequestBuilders.get(String.format("/product/%s",productId.getValue()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$").doesNotExist());
+                        .andReturn().getResponse().getContentAsString();
+
+        String messageFromValidation = objectMapper.readTree(response).get("message").asText();
+        Assertions.assertTrue(messageFromValidation.contains(String.format("Not found a Product with id: %s", productId.getValue())));
     }
 
     @Test
