@@ -16,4 +16,4 @@ ARG JAR_FILE=target/*.jar
 COPY --from=build /app/${JAR_FILE} app.jar
 EXPOSE 8081
 
-ENTRYPOINT ["sh", "-c", "java -version && java $JAVA_OPTS -jar /app/app.jar"]
+ENTRYPOINT ["sh", "-c" ,"java -version & java $JAVA_OPTS -jar /app/app.jar"]
