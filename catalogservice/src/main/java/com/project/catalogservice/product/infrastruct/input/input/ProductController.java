@@ -60,7 +60,7 @@ public class ProductController {
             @RequestParam(name = "description") String description,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
-            @RequestParam(name = "sort", defaultValue = "dueDate") String sort)  {
+            @RequestParam(name = "sort", defaultValue = "name") String sort)  {
 
         GetProductsByNameAndDescriptionInput input = new GetProductsByNameAndDescriptionInput(name, description, page, size, sort);
         PaginatedResponse<GetProductOutput> response = getProductsByNameAndDescription.execute(input);

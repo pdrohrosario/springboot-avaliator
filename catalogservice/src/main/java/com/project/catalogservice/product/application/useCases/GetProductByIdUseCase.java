@@ -25,7 +25,7 @@ public class GetProductByIdUseCase implements GetProductById {
         ProductId productId = ProductId.fromString(id);
         Optional<Product> productSearched = find.execute(productId);
         if (productSearched.isEmpty()) {
-            throw new ProductNotFound(productId.getValue());
+            throw new ProductNotFound(productId.toString());
         }
         return ProductUseCaseMapper.toGetOutput(productSearched.get());
 

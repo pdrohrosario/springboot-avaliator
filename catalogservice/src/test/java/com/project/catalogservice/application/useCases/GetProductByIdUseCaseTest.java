@@ -49,7 +49,7 @@ public class GetProductByIdUseCaseTest {
         when(find.execute(any())).thenReturn(search);
 
        //act
-        GetProductOutput productFounded = get.execute(ProductId.generate().getValue());
+        GetProductOutput productFounded = get.execute(ProductId.generate().getValue().toString());
 
        //assert
         assertNotNull(productFounded);
@@ -64,7 +64,7 @@ public class GetProductByIdUseCaseTest {
         //act
         ProductNotFound exception = assertThrows(
                 ProductNotFound.class,
-                () -> get.execute(productId.getValue())
+                () -> get.execute(productId.getValue().toString())
         );
 
         //assert

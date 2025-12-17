@@ -8,7 +8,7 @@ public class ProductUseCaseMapper {
 
     public static CreateProductOutput toCreateOutput(Product product) {
         return new CreateProductOutput(
-            product.getId().getValue(),
+            product.getId().toString(),
             product.getName(),
             product.getPrice(),
             product.getDescription(),
@@ -20,7 +20,7 @@ public class ProductUseCaseMapper {
 
     public static GetProductOutput toGetOutput(Product product) {
         return new GetProductOutput(
-            product.getId().getValue(),
+            product.getId().toString(),
             product.getName(),
             product.getPrice(),
             product.getDescription(),

@@ -78,9 +78,9 @@ public class ProductControllerTest {
     @BeforeEach
     public void setup() {
         createRequest = new CreateProductRequest("Laptop", BigDecimal.valueOf(99.99), "It is a new HP Laptop", "ELECTRONICS");
-        createProductOutput = new CreateProductOutput(ProductId.generate().getValue(), "Laptop", BigDecimal.valueOf(99.99), "It is a new HP Laptop", "ELECTRONICS", "AVAILABLE", LocalDate.now());
+        createProductOutput = new CreateProductOutput(ProductId.generate().getValue().toString(), "Laptop", BigDecimal.valueOf(99.99), "It is a new HP Laptop", "ELECTRONICS", "AVAILABLE", LocalDate.now());
         createResponse = ProductControllerMapper.toResponse(createProductOutput);
-        getProductOutput = new GetProductOutput(ProductId.generate().getValue(),"Laptop", BigDecimal.valueOf(99.99), "It is a new HP Laptop", "ELECTRONICS", "AVAILABLE", LocalDate.now());
+        getProductOutput = new GetProductOutput(ProductId.generate().getValue().toString(),"Laptop", BigDecimal.valueOf(99.99), "It is a new HP Laptop", "ELECTRONICS", "AVAILABLE", LocalDate.now());
         getResponse = ProductControllerMapper.toResponse(getProductOutput);
     }
     
@@ -143,7 +143,7 @@ public class ProductControllerTest {
     public void shouldNotReturnProductWhenIdNotExist() throws Exception {
         // Arrange
         ProductId productId = ProductId.generate();
-        when(getProductById.execute(any())).thenThrow(new ProductNotFound(productId.getValue()));
+        when(getProductById.execute(any())).thenThrow(new ProductNotFound(productId.toString()));
 
         // Act and Assert
         String response = mockMvc.perform(MockMvcRequestBuilders.get(String.format("/product/%s",productId.getValue()))
@@ -160,7 +160,7 @@ public class ProductControllerTest {
     public void shouldReturnTenProductWithSuccess() throws Exception {
         //Arrange
          List<GetProductOutput> productList = (IntStream.range(0, 10)
-                .mapToObj(i -> new GetProductOutput(ProductId.generate().getValue(), "Book " + i, BigDecimal.valueOf(10 + i), "A new book " + i, "BOOKS", "AVAILABLE", LocalDate.now()))
+                .mapToObj(i -> new GetProductOutput(ProductId.generate().toString(), "Book " + i, BigDecimal.valueOf(10 + i), "A new book " + i, "BOOKS", "AVAILABLE", LocalDate.now()))
                 .toList());
 
         PaginatedResponse<GetProductOutput> paginatedResponse = new PaginatedResponse<>(productList, 0, false);

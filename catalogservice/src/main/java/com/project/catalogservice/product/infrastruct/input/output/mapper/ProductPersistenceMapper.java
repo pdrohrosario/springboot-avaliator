@@ -7,7 +7,7 @@ import com.project.catalogservice.product.infrastruct.input.output.entities.JpaP
 public class ProductPersistenceMapper {
 
     public static Product toDomain(JpaProduct jpa) {
-        return Product.fromEntity(ProductId.fromString(jpa.getId()), jpa.getName(), jpa.getPrice(), jpa.getDescription(),
+        return Product.fromEntity(ProductId.fromString(jpa.getId().toString()), jpa.getName(), jpa.getPrice(), jpa.getDescription(),
                 jpa.getCategory().name(), jpa.getStatus().name(), jpa.getCreatedAt());
     }
 
