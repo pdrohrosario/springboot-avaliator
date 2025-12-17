@@ -24,7 +24,7 @@ public class FindProductsByNameAndDescriptionAdapter implements FindProductsByNa
     @Override
     public PaginatedResponse<Product> execute(GetProductsByNameAndDescriptionInput input) {
         Pageable pageable = PageRequest.of(input.page(), input.size(), Sort.by(input.sortBy()));
-        Page<Product> productsPage = repository.findByNameAndDescription(input.name(), input.description(), pageable)
+        Page<Product> productsPage = repository.searchByNameAndDescription(input.name(), input.description(), pageable)
                 .map(ProductPersistenceMapper::toDomain);
 
         return new PaginatedResponse<>(productsPage.getContent(), productsPage.getPageable().getPageNumber(), productsPage.hasNext());

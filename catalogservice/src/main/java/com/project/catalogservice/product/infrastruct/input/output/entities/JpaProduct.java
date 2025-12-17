@@ -13,7 +13,7 @@ import java.util.UUID;
 public class JpaProduct {
 
     @Id
-    private String id;
+    private UUID id;
 
     private String name;
 
@@ -32,7 +32,7 @@ public class JpaProduct {
     public JpaProduct() {
     }
 
-    public JpaProduct(String id, String name, BigDecimal price, String description, ProductCategory category, ProductStatus status, LocalDate createdAt) {
+    public JpaProduct(UUID id, String name, BigDecimal price, String description, ProductCategory category, ProductStatus status, LocalDate createdAt) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -58,11 +58,11 @@ public class JpaProduct {
         this.price = price;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

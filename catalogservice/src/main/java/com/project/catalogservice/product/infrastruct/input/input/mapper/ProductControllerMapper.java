@@ -11,7 +11,7 @@ public class ProductControllerMapper {
 
     public static CreateProductInput toInput(CreateProductRequest request) {
         return new CreateProductInput(
-            request.productName(),
+            request.name(),
             request.price(),
             request.description(),
             request.category()

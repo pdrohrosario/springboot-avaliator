@@ -6,22 +6,25 @@ import java.util.UUID;
 
 public class ProductId extends ValueObject {
 
-    private final String value;
+    private final UUID value;
 
-    public ProductId(String value) {
+    private ProductId(UUID value) {
         this.value = value;
     }
-
     public static ProductId generate() {
-        return new ProductId(UUID.randomUUID().toString());
+        return new ProductId(UUID.randomUUID());
     }
 
     public static ProductId fromString(String value) {
-        return new ProductId(value);
+        return new ProductId(UUID.fromString(value));
     }
 
-    public String getValue() {
+    public UUID getValue() {
         return value;
+    }
+
+    public String toString() {
+        return value.toString();
     }
 
     @Override

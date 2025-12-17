@@ -17,9 +17,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import com.project.catalogservice.product.infrastruct.input.input.request.CreateProductRequest;
+
+import java.util.Collection;
+import java.util.List;
 
 
 @RestController
@@ -39,7 +43,7 @@ public class ProductController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<CreateProductResponse> create(@RequestBody CreateProductRequest request) {
+    public ResponseEntity<CreateProductResponse> create(@Valid @RequestBody CreateProductRequest request) {
         CreateProductOutput output = createProduct.execute(ProductControllerMapper.toInput(request));
         return new ResponseEntity<>(ProductControllerMapper.toResponse(output), HttpStatus.CREATED);
     }
@@ -56,12 +60,12 @@ public class ProductController {
             @RequestParam(name = "description") String description,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
-            @RequestParam(name = "sort", defaultValue = "dueDate") String sort)  {
+            @RequestParam(name = "sort", defaultValue = "name") String sort)  {
 
         GetProductsByNameAndDescriptionInput input = new GetProductsByNameAndDescriptionInput(name, description, page, size, sort);
         PaginatedResponse<GetProductOutput> response = getProductsByNameAndDescription.execute(input);
         PaginatedResponse<GetProductResponse> paginatedResponse = new PaginatedResponse<>(
-                response.items().stream().map(ProductControllerMapper::toResponse).toList(),
+                response.items() == null ? List.of() : response.items().stream().map(ProductControllerMapper::toResponse).toList(),
                 response.currentPage(),
                 response.hasNextPage()
         );

@@ -45,7 +45,7 @@ public class GetProductsByNameAndDescriptionUseCaseTest {
     @BeforeEach
     public void setup() {
         List<Product> productList = IntStream.range(0,10)
-                .mapToObj(i -> Product.fromEntity(ProductId.generate(),"Book " + i, BigDecimal.TEN,"new book " + i, "BOOKS" , "AVALIABE" ,LocalDate.now()))
+                .mapToObj(i -> Product.fromEntity(ProductId.generate(),"Book " + i, BigDecimal.TEN,"new book " + i, "BOOKS" , "AVAILABLE" ,LocalDate.now()))
                 .toList();
 
         pageable = PageRequest.of(0, 10, Sort.by("name").ascending());

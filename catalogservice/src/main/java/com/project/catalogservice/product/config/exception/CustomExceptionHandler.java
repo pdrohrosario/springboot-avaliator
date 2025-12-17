@@ -3,6 +3,7 @@ package com.project.catalogservice.product.config.exception;
 import java.time.LocalDateTime;
 
 import com.project.catalogservice.product.domain.ProductAlreadyExistsException;
+import com.project.catalogservice.product.domain.ProductNotFound;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -45,6 +46,18 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorMessage> handleIllegalArgumentException(IllegalArgumentException ex,
+                                                                   WebRequest request) {
+
+        ErrorMessage errorDetails = new ErrorMessage(
+                ex.getMessage(),
+                request.getDescription(false),
+                LocalDateTime.now());
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ProductNotFound.class)
+    public ResponseEntity<ErrorMessage> handleProductNotFound(ProductNotFound ex,
                                                                    WebRequest request) {
 
         ErrorMessage errorDetails = new ErrorMessage(
