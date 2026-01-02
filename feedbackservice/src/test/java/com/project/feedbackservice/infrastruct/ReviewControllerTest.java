@@ -1,5 +1,6 @@
 package com.project.feedbackservice.infrastruct;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.feedbackservice.review.application.input.CreateReviewInput;
 import com.project.feedbackservice.review.application.output.CreateReviewOutput;
@@ -10,12 +11,14 @@ import com.project.feedbackservice.review.infrastruct.input.ReviewController;
 import com.project.feedbackservice.review.infrastruct.input.request.CreateReviewRequest;
 import com.project.feedbackservice.review.infrastruct.input.response.CreateReviewResponse;
 import com.project.feedbackservice.review.infrastruct.mapper.ReviewControllerMapper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -74,4 +77,45 @@ public class ReviewControllerTest {
                 .andExpect(jsonPath("$.rating").value(createResponse.rating()))
                 .andExpect(jsonPath("$.comment").value(createResponse.comment()));
     }
+
+    @Test
+    public void shouldNotCreateReviewWhenProductIdIsMissing() throws Exception {
+        //Arrange
+        createRequest = new CreateReviewRequest("", 5, "Great product!");
+        String request = objectMapper.writeValueAsString(createRequest);
+
+        //Act
+        String response = mockMvc.perform(MockMvcRequestBuilders.post("/review/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8)
+                .content(request))
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString();
+
+        //Assert
+        String messageFromValidation = objectMapper.readTree(response).get("message").asText();
+        Assertions.assertTrue(messageFromValidation.contains("Product ID is required"));
+    }
+
+    @Test
+    public void shouldNotCreateReviewWhenRatingIsMissing() throws Exception {
+        //Arrange
+        createRequest = new CreateReviewRequest(ProductId.generate().toString(), null, "Great product!");
+        String request = objectMapper.writeValueAsString(createRequest);
+
+        //Act
+        String response = mockMvc.perform(MockMvcRequestBuilders.post("/review/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(request))
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString();
+
+        //Assert
+        String messageFromValidation = objectMapper.readTree(response).get("message").asText();
+        Assertions.assertTrue(messageFromValidation.contains("Rating is required"));
+    }
+
 }
