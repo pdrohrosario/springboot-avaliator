@@ -50,8 +50,8 @@ public class ReviewControllerTest {
     public void setup() {
         ReviewId reviewId = ReviewId.generate();
         ProductId productId = ProductId.generate();
-        createRequest = new CreateReviewRequest(productId.toString(), 5, "Greate product!");
-        createOutput = new CreateReviewOutput(reviewId.toString(), productId.toString(),5, "Greate product!", LocalDate.now());
+        createRequest = new CreateReviewRequest(productId.toString(), 5, "Great product!");
+        createOutput = new CreateReviewOutput(reviewId.toString(), productId.toString(),5, "Great product!", LocalDate.now());
         createResponse = ReviewControllerMapper.toResponse(createOutput);
 
     }
