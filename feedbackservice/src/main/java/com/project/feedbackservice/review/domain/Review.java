@@ -11,7 +11,7 @@ public class Review extends AggregateRoot<ReviewId> {
     private String comment;
     private LocalDate createdAt;
 
-    protected Review(ReviewId id, ProductId productId, int rating, String comment) {
+    private Review(ReviewId id, ProductId productId, int rating, String comment) {
         super(id);
         validateProductId(productId);
         validateRating(rating);
