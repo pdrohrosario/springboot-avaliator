@@ -20,6 +20,15 @@ public class ProductId extends ValueObject {
         return new ProductId(UUID.fromString(value));
     }
 
+    public UUID getValue() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return value.toString();
+    }
+
     @Override
     public boolean equals(Object obj) {
         return false;

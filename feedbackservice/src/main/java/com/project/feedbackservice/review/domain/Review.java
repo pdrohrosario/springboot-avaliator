@@ -3,6 +3,8 @@ package com.project.feedbackservice.review.domain;
 import com.project.feedbackservice.review.common.domain.AggregateRoot;
 
 import java.time.LocalDate;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 public class Review extends AggregateRoot<ReviewId> {
 
@@ -11,8 +13,8 @@ public class Review extends AggregateRoot<ReviewId> {
     private String comment;
     private LocalDate createdAt;
 
-    private Review(ReviewId id, ProductId productId, int rating, String comment) {
-        super(id);
+    private Review(ReviewId reviewId, ProductId productId, int rating, String comment) {
+        super(reviewId);
         validateProductId(productId);
         validateRating(rating);
         validateComment(comment);
@@ -20,6 +22,16 @@ public class Review extends AggregateRoot<ReviewId> {
         this.rating = rating;
         this.comment = comment;
         this.createdAt = LocalDate.now();
+    }
+
+    public static Review create(ProductId productId, int rating, String comment){
+        return new Review(ReviewId.generate(), productId, rating, comment);
+    }
+
+    public static Review fromEntity(ReviewId id, ProductId productId, int rating, String comment, LocalDate createdAt){
+        Review review = new Review(id, productId, rating, comment);
+        review.createdAt = createdAt;
+        return review;
     }
 
     private void validateProductId(ProductId productId) {

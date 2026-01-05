@@ -3,6 +3,7 @@ package com.project.feedbackservice.review.domain;
 import com.project.feedbackservice.review.common.domain.ValueObject;
 
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 public class ReviewId extends ValueObject {
 
