@@ -81,16 +81,15 @@ public class CreateReviewUseCaseTest {
     void shouldNotCreateReviewWhenProductIdIsNull(){
         //Arrange
         createInput = new CreateReviewInput(null, 5, "Great product!");
-        when(findProductById.execute(any())).thenReturn(true);
 
         //Act
         Exception exception = assertThrows(
-                IllegalArgumentException.class,
+                ProductIdIsNotValidException.class,
                 () -> create.execute(createInput)
         );
 
         //Assert
-        assertEquals("ProductId cannot be null", exception.getMessage());
+        assertEquals("Invalid Product ID: null", exception.getMessage());
     }
 
     @Test

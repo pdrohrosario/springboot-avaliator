@@ -7,6 +7,7 @@ import com.project.feedbackservice.review.application.ports.input.CreateReview;
 import com.project.feedbackservice.review.application.ports.output.FindProductById;
 import com.project.feedbackservice.review.application.ports.output.SaveReview;
 import com.project.feedbackservice.review.domain.ProductId;
+import com.project.feedbackservice.review.domain.ProductIdIsNotValidException;
 import com.project.feedbackservice.review.domain.ProductNotFoundException;
 import com.project.feedbackservice.review.domain.Review;
 import org.springframework.stereotype.Service;
@@ -24,16 +25,27 @@ public class CreateReviewUseCase implements CreateReview {
 
     @Override
     public CreateReviewOutput execute(CreateReviewInput input) {
-        ProductId productId = ProductId.fromString(input.productId());
-
-        if (!findProductById.execute(productId)){
-            throw new ProductNotFoundException(input.productId());
-        }
+        ProductId productId = validateProductId(input.productId());
+        checkProductExistence(productId, input.productId());
 
         Review review = Review.create(productId, input.rating(), input.comment());
 
-        saveReview.execute(review);
+        review = saveReview.execute(review);
 
         return ReviewUseCaseMapper.toCreateOutput(review);
+    }
+
+    private ProductId validateProductId(String productIdString) {
+        try {
+            return ProductId.fromString(productIdString);
+        } catch (NullPointerException ex) {
+            throw new ProductIdIsNotValidException(productIdString);
+        }
+    }
+
+    private void checkProductExistence(ProductId productId, String originalProductIdString) {
+        if (!findProductById.execute(productId)) {
+            throw new ProductNotFoundException(originalProductIdString);
+        }
     }
 }
