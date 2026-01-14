@@ -14,6 +14,7 @@ services:
       - app-network
 
   app-catalog:
+    build: ./catalogservice
     image: catalogservice:latest
     container_name: catalogservice
     restart: always
@@ -42,35 +43,36 @@ services:
     networks:
       - app-network
 
-  app-feedback:
-    image: feedbackservice:latest
-    container_name: feedbackservice
-    restart: always
-    depends_on:
-      - postgres
-      - app-catalog
-    environment:
-      SPRING_APPLICATION_NAME: feedbackservice
-      SERVER_PORT: 8882
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/avaliator
-      SPRING_DATASOURCE_USERNAME: admin123
-      SPRING_DATASOURCE_PASSWORD: admin123
-      SPRING_JPA_HIBERNATE_DDL_AUTO: none
-      SPRING_JPA_SHOW_SQL: "true"
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-      SPRING_FLYWAY_ENABLED: "true"
-      SPRING_FLYWAY_DEFAULT_SCHEMA: feedback_schema
-      SPRING_FLYWAY_SCHEMAS: feedback_schema
-      SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: feedback_schema
-      SPRING_FLYWAY_LOCATIONS: classpath:db/migration
-      SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
-#      JAVA_TOOL_OPTIONS: >
-#        -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5011
-    ports:
-      - "8882:8882"
-      - "5011:5011"
-    networks:
-      - app-network
+#  app-feedback:
+#    build: ./feedbackservice
+#    image: feedbackservice:latest
+#    container_name: feedbackservice
+#    restart: always
+#    depends_on:
+#      - postgres
+#      - app-catalog
+#    environment:
+#      SPRING_APPLICATION_NAME: feedbackservice
+#      SERVER_PORT: 8882
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/avaliator
+#      SPRING_DATASOURCE_USERNAME: admin123
+#      SPRING_DATASOURCE_PASSWORD: admin123
+#      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+#      SPRING_JPA_SHOW_SQL: "true"
+#      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+#      SPRING_FLYWAY_ENABLED: "true"
+#      SPRING_FLYWAY_DEFAULT_SCHEMA: feedback_schema
+#      SPRING_FLYWAY_SCHEMAS: feedback_schema
+#      SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: feedback_schema
+#      SPRING_FLYWAY_LOCATIONS: classpath:db/migration
+#      SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
+##      JAVA_TOOL_OPTIONS: >
+##        -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5011
+#    ports:
+#      - "8882:8882"
+#      - "5011:5011"
+#    networks:
+#      - app-network
 
 volumes:
   postgres_data:
