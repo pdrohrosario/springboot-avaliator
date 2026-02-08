@@ -5,11 +5,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.time.LocalDate;
-import java.util.Locale;
 import java.util.UUID;
 
 @Entity
-@Table(name = "review")
+@Table(name = "review",schema = "feedback_schema")
 public class JpaReview {
 
     @Id
@@ -21,16 +20,16 @@ public class JpaReview {
 
     private String comment;
 
-    private LocalDate createAt;
+    private LocalDate createdAt;
 
     private JpaReview(){}
 
-    public JpaReview(UUID id, UUID productId, int rating, String comment, LocalDate createAt){
+    public JpaReview(UUID id, UUID productId, int rating, String comment, LocalDate createdAt){
         this.id = id;
         this.productId = productId;
         this.rating = rating;
         this.comment = comment;
-        this.createAt = createAt;
+        this.createdAt = createdAt;
     }
 
     public UUID getId() {
@@ -65,11 +64,11 @@ public class JpaReview {
         this.comment = comment;
     }
 
-    public LocalDate getCreateAt() {
-        return createAt;
+    public LocalDate getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreateAt(LocalDate createAt) {
-        this.createAt = createAt;
+    public void setCreatedAt(LocalDate createdAt) {
+        this.createdAt = createdAt;
     }
 }
