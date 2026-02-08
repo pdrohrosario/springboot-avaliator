@@ -12,6 +12,6 @@ public class ReviewPersistenceMapper {
     }
 
     public static Review toDomain(JpaReview jpaReview){
-        return Review.fromEntity(ReviewId.fromString(jpaReview.getId().toString()), ProductId.fromString(jpaReview.getProductId().toString()), jpaReview.getRating(), jpaReview.getComment(), jpaReview.getCreateAt());
+        return Review.fromEntity(ReviewId.fromString(jpaReview.getId().toString()), ProductId.fromString(jpaReview.getProductId().toString()), jpaReview.getRating(), jpaReview.getComment(), jpaReview.getCreatedAt());
     }
 }
