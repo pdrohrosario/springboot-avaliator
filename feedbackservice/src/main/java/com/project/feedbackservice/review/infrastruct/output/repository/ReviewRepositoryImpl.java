@@ -7,9 +7,11 @@ import com.project.feedbackservice.review.domain.ReviewId;
 import com.project.feedbackservice.review.domain.ReviewRepository;
 import com.project.feedbackservice.review.infrastruct.output.entities.JpaReview;
 import com.project.feedbackservice.review.infrastruct.output.mapper.ReviewPersistenceMapper;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+@Component
 public class ReviewRepositoryImpl implements ReviewRepository {
 
     private final JpaReviewRepository repository;

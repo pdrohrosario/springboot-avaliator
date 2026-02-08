@@ -4,7 +4,9 @@ import com.project.feedbackservice.review.application.ports.output.FindProductBy
 import com.project.feedbackservice.review.domain.ProductId;
 import com.project.feedbackservice.review.infrastruct.input.response.GetProductResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
+@Component
 public class FindProductByIdAdapter implements FindProductById {
 
     private final ProductClient client;
