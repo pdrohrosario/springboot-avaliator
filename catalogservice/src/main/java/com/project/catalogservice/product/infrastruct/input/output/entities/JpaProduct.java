@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity()
-@Table(name = "product")
+@Table(name = "product", schema = "catalog_schema")
 public class JpaProduct {
 
     @Id
