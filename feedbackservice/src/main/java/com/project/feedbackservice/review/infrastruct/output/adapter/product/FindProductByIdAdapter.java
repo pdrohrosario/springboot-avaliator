@@ -6,6 +6,8 @@ import com.project.feedbackservice.review.config.exception.ResourceNotFoundExcep
 import com.project.feedbackservice.review.domain.ProductId;
 import com.project.feedbackservice.review.domain.ProductNotFoundException;
 
+import feign.RetryableException;
+
 import org.hibernate.boot.beanvalidation.IntegrationException;
 
 import org.springframework.stereotype.Component;
@@ -26,7 +28,9 @@ public class FindProductByIdAdapter implements FindProductById {
             return true;
         } catch (ResourceNotFoundException e) {
             throw new ProductNotFoundException(productId.toString());
-        } catch (ApiIntegrationException e) {
+        } catch (RetryableException e) {
+            throw new ApiIntegrationException();
+        }catch (ApiIntegrationException e) {
             throw new IntegrationException(e.getMessage());
         }
     }

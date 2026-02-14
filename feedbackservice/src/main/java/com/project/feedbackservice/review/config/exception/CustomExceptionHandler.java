@@ -43,4 +43,29 @@ public class CustomExceptionHandler {
 
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler({IllegalArgumentException.class})
+    public ResponseEntity<ErrorMessage> handleIllegalArgumentException(IllegalArgumentException ex,
+                                                                   WebRequest request) {
+
+        ErrorMessage errorDetails = new ErrorMessage(
+                ex.getMessage(),
+                request.getDescription(false),
+                LocalDateTime.now());
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+        
+    }
+
+    @ExceptionHandler({ApiIntegrationException.class})
+    public ResponseEntity<ErrorMessage> handleApiIntegrationException(ApiIntegrationException ex,
+                                                                   WebRequest request) {
+        
+         ErrorMessage errorDetails = new ErrorMessage(
+                ex.getMessage(),
+                request.getDescription(false),
+                LocalDateTime.now());
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.SERVICE_UNAVAILABLE);                                                            
+    }                                                                
 }
