@@ -3,8 +3,6 @@ package com.project.feedbackservice.review.domain;
 import com.project.feedbackservice.review.common.domain.AggregateRoot;
 
 import java.time.LocalDate;
-import java.util.UUID;
-import java.util.regex.Pattern;
 
 public class Review extends AggregateRoot<ReviewId> {
 
