@@ -65,6 +65,6 @@ public class CustomExceptionHandler {
                 request.getDescription(false),
                 LocalDateTime.now());
 
-        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
 }

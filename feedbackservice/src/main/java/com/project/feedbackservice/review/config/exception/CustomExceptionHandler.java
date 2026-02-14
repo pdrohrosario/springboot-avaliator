@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+import com.project.feedbackservice.review.domain.ProductNotFoundException;
+
 import java.time.LocalDateTime;
 
 @RestControllerAdvice
@@ -28,5 +30,17 @@ public class CustomExceptionHandler {
                 LocalDateTime.now());
 
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({ProductNotFoundException.class})
+    public ResponseEntity<ErrorMessage> handleProductNotFound(ProductNotFoundException ex,
+                                                                   WebRequest request) {
+
+        ErrorMessage errorDetails = new ErrorMessage(
+                ex.getMessage(),
+                request.getDescription(false),
+                LocalDateTime.now());
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
 }

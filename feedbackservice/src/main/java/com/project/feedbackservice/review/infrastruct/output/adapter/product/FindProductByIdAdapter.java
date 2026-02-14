@@ -1,9 +1,13 @@
 package com.project.feedbackservice.review.infrastruct.output.adapter.product;
 
 import com.project.feedbackservice.review.application.ports.output.FindProductById;
+import com.project.feedbackservice.review.config.exception.ApiIntegrationException;
+import com.project.feedbackservice.review.config.exception.ResourceNotFoundException;
 import com.project.feedbackservice.review.domain.ProductId;
-import com.project.feedbackservice.review.infrastruct.input.response.GetProductResponse;
-import org.springframework.http.ResponseEntity;
+import com.project.feedbackservice.review.domain.ProductNotFoundException;
+
+import org.hibernate.boot.beanvalidation.IntegrationException;
+
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,7 +21,13 @@ public class FindProductByIdAdapter implements FindProductById {
 
     @Override
     public boolean execute(ProductId productId) {
-        ResponseEntity<GetProductResponse> response = client.getProductById(productId.toString());
-        return  response.getBody() != null && response.getBody().id() != null;
+        try {
+            client.getProductById(productId.toString());
+            return true;
+        } catch (ResourceNotFoundException e) {
+            throw new ProductNotFoundException(productId.toString());
+        } catch (ApiIntegrationException e) {
+            throw new IntegrationException(e.getMessage());
+        }
     }
 }
