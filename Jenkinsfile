@@ -14,6 +14,11 @@ pipeline {
         }
 
         stage('Build Catalog Service') {
+            agent {
+                docker {
+                    image 'maven:3.9.7-eclipse-temurin-21-alpine'
+                }
+            }
             steps {
                 dir('catalogservice') {
                     sh 'mvn clean package -DskipTests'
