@@ -34,26 +34,26 @@ pipeline {
             }
         }
 
-        stage('Build Docker Images') {
-            steps {
-                sh 'docker build -t $REGISTRY/catalogservice:latest catalogservice'
-                sh 'docker build -t $REGISTRY/feedbackservice:latest feedbackservice'
-            }
-        }
+        // stage('Build Docker Images') {
+        //     steps {
+        //         sh 'docker build -t $REGISTRY/catalogservice:latest catalogservice'
+        //         sh 'docker build -t $REGISTRY/feedbackservice:latest feedbackservice'
+        //     }
+        // }
 
-        stage('Push Images') {
-            steps {
-                sh 'docker push $REGISTRY/catalogservice:latest'
-                sh 'docker push $REGISTRY/feedbackservice:latest'
-            }
-        }
+        // stage('Push Images') {
+        //     steps {
+        //         sh 'docker push $REGISTRY/catalogservice:latest'
+        //         sh 'docker push $REGISTRY/feedbackservice:latest'
+        //     }
+        // }
 
-        stage('Deploy with Docker Compose') {
-            steps {
-                sh 'docker compose down'
-                sh 'docker compose up -d --build'
-            }
-        }
+        // stage('Deploy with Docker Compose') {
+        //     steps {
+        //         sh 'docker compose down'
+        //         sh 'docker compose up -d --build'
+        //     }
+        // }
 
         // Se quiser Kubernetes em vez de compose
         /*
