@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/pdrohrosario/springboot-avaliator'
+                git branch: 'master', url: 'https://github.com/pdrohrosario/springboot-avaliator'
             }
         }
 
@@ -31,7 +31,7 @@ pipeline {
                     }
                     post {
                         always {
-                            junit 'catalogservice/target/surefire-reports/*.xml'
+                            junit testResults: 'catalogservice/target/surefire-reports/*.xml', allowEmptyResults: true
                         }
                     }
                 }
@@ -51,7 +51,7 @@ pipeline {
                     }
                     post {
                         always {
-                            junit 'feedbackservice/target/surefire-reports/*.xml'
+                            junit testResults: 'feedbackservice/target/surefire-reports/*.xml', allowEmptyResults: true
                         }
                     }
                 }
@@ -70,11 +70,30 @@ pipeline {
                 }
             }
         }
+
+        stage('Push Images') {
+            agent any
+            when {
+                branch 'master'
+            }
+            steps {
+                script {
+                    sh "docker push ${CATALOG_IMAGE}"
+                    sh "docker push ${FEEDBACK_IMAGE}"
+                }
+            }
+        }
     }
 
     post {
         always {
             cleanWs()
+        }
+        failure {
+            echo "Pipeline falhou! Verifique os logs."
+        }
+        success {
+            echo "Pipeline executada com sucesso!"
         }
     }
 }
