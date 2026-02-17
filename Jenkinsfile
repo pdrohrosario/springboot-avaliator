@@ -3,66 +3,75 @@ pipeline {
 
     environment {
         REGISTRY = "localhost:5001"
+        CATALOG_IMAGE = "${REGISTRY}/catalogservice:latest"
+        FEEDBACK_IMAGE = "${REGISTRY}/feedbackservice:latest"
     }
 
     stages {
 
         stage('Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/pdrohrosario/springboot-avaliator'
+                git branch: 'main', url: 'https://github.com/pdrohrosario/springboot-avaliator'
             }
         }
 
-        stage('Build Catalog Service') {
-            agent {
-                docker {
-                    image 'maven:3.9.7-eclipse-temurin-21-alpine'
+        stage('Build & Test') {
+            parallel {
+
+                stage('Catalog Service') {
+                    agent {
+                        docker {
+                            image 'maven:3.9.7-eclipse-temurin-21-alpine'
+                            args '-v $HOME/.m2:/root/.m2'
+                        }
+                    }
+                    steps {
+                        dir('catalogservice') {
+                            sh 'mvn clean verify'
+                        }
+                    }
+                    post {
+                        always {
+                            junit 'catalogservice/target/surefire-reports/*.xml'
+                        }
+                    }
+                }
+
+                stage('Feedback Service') {
+                    agent {
+                        docker {
+                            image 'maven:3.9.7-eclipse-temurin-21-alpine'
+                            args '-v $HOME/.m2:/root/.m2'
+                        }
+                    }
+                    steps {
+                        dir('feedbackservice') {
+                            sh 'mvn clean verify'
+                        }
+                    }
+                    post {
+                        always {
+                            junit 'feedbackservice/target/surefire-reports/*.xml'
+                        }
+                    }
                 }
             }
-            steps {
-                dir('catalogservice') {
-                    sh 'mvn clean package -DskipTests'
-                }
-            }
         }
 
-        stage('Build Feedback Service') {
+        stage('Build Docker Images') {
+            when {
+                expression { currentBuild.currentResult == 'SUCCESS' }
+            }
             steps {
-                dir('feedbackservice') {
-                    sh 'mvn clean package -DskipTests'
-                }
+                sh 'docker build -t $CATALOG_IMAGE catalogservice'
+                sh 'docker build -t $FEEDBACK_IMAGE feedbackservice'
             }
         }
+    }
 
-        // stage('Build Docker Images') {
-        //     steps {
-        //         sh 'docker build -t $REGISTRY/catalogservice:latest catalogservice'
-        //         sh 'docker build -t $REGISTRY/feedbackservice:latest feedbackservice'
-        //     }
-        // }
-
-        // stage('Push Images') {
-        //     steps {
-        //         sh 'docker push $REGISTRY/catalogservice:latest'
-        //         sh 'docker push $REGISTRY/feedbackservice:latest'
-        //     }
-        // }
-
-        // stage('Deploy with Docker Compose') {
-        //     steps {
-        //         sh 'docker compose down'
-        //         sh 'docker compose up -d --build'
-        //     }
-        // }
-
-        // Se quiser Kubernetes em vez de compose
-        /*
-        stage('Deploy Kubernetes') {
-            steps {
-                sh 'kubectl apply -f k8s/'
-            }
+    post {
+        always {
+            cleanWs()
         }
-        */
-
     }
 }
