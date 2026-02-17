@@ -8,7 +8,6 @@ pipeline {
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/pdrohrosario/springboot-avaliator'
@@ -17,7 +16,6 @@ pipeline {
 
         stage('Build & Test') {
             parallel {
-
                 stage('Catalog Service') {
                     agent {
                         docker {
@@ -27,7 +25,8 @@ pipeline {
                     }
                     steps {
                         dir('catalogservice') {
-                            sh 'mvn clean verify'
+                            sh 'mvn clean verify -DskipTests=false'
+                            stash name: 'catalog-jar', includes: 'target/*.jar'
                         }
                     }
                     post {
@@ -46,7 +45,8 @@ pipeline {
                     }
                     steps {
                         dir('feedbackservice') {
-                            sh 'mvn clean verify'
+                            sh 'mvn clean verify -DskipTests=false'
+                            stash name: 'feedback-jar', includes: 'target/*.jar'
                         }
                     }
                     post {
@@ -59,12 +59,15 @@ pipeline {
         }
 
         stage('Build Docker Images') {
-            when {
-                expression { currentBuild.currentResult == 'SUCCESS' }
-            }
+            agent any 
             steps {
-                sh 'docker build -t $CATALOG_IMAGE catalogservice'
-                sh 'docker build -t $FEEDBACK_IMAGE feedbackservice'
+                script {
+                    dir('catalogservice') { unstash 'catalog-jar' }
+                    dir('feedbackservice') { unstash 'feedback-jar' }
+                    
+                    sh "docker build -t ${CATALOG_IMAGE} catalogservice"
+                    sh "docker build -t ${FEEDBACK_IMAGE} feedbackservice"
+                }
             }
         }
     }
