@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-script
+  namespace: avaliator
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: avaliator
+data:
+  init.sql: |
+    CREATE DATABASE avaliator;
+    \connect avaliator
+    CREATE SCHEMA IF NOT EXISTS catalog_schema;
+    CREATE SCHEMA IF NOT EXISTS feedback_schema;

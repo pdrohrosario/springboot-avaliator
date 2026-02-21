@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: avaliator-ingress
+  namespace: avaliator
+  labels:
+    app.kubernetes.io/name: avaliator-ingress
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: avaliator
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /catalog(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: catalogservice
+                port:
+                  number: 8081
+          - path: /feedback(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: feedbackservice
+                port:
+                  number: 8882
