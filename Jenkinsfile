@@ -113,37 +113,36 @@ pipeline {
         }
 
         stage('Deploy to Kubernetes') {
-            environment {
-                KUBECONFIG = "k8s/jenkins-kubeconfig.yaml"
-            }
             steps {
-                sh """
-                    echo '📋 Aplicando manifests K8s...'
-                    kubectl apply -f k8s/namespace.yaml
-                    kubectl apply -f k8s/postgres/
-                    kubectl apply -f k8s/catalogservice/
-                    kubectl apply -f k8s/feedbackservice/
-                    kubectl apply -f k8s/ingress.yaml
+                withCredentials([file(credentialsId: 'k8s-kubeconfig', variable: 'KUBECONFIG')]) {
+                    sh """
+                        echo '📋 Aplicando manifests K8s...'
+                        kubectl apply -f k8s/namespace.yaml
+                        kubectl apply -f k8s/postgres/
+                        kubectl apply -f k8s/catalogservice/
+                        kubectl apply -f k8s/feedbackservice/
+                        kubectl apply -f k8s/ingress.yaml
 
-                    echo '🔄 Atualizando imagens para build ${BUILD_NUMBER}...'
-                    kubectl set image deployment/catalogservice \
-                        catalogservice=${REGISTRY}/catalogservice:${BUILD_NUMBER} \
-                        -n ${K8S_NAMESPACE}
+                        echo '🔄 Atualizando imagens para build ${BUILD_NUMBER}...'
+                        kubectl set image deployment/catalogservice \
+                            catalogservice=${REGISTRY}/catalogservice:${BUILD_NUMBER} \
+                            -n ${K8S_NAMESPACE}
 
-                    kubectl set image deployment/feedbackservice \
-                        feedbackservice=${REGISTRY}/feedbackservice:${BUILD_NUMBER} \
-                        -n ${K8S_NAMESPACE}
+                        kubectl set image deployment/feedbackservice \
+                            feedbackservice=${REGISTRY}/feedbackservice:${BUILD_NUMBER} \
+                            -n ${K8S_NAMESPACE}
 
-                    echo '⏳ Verificando rollout...'
-                    kubectl rollout status deployment/catalogservice \
-                        -n ${K8S_NAMESPACE} --timeout=180s
+                        echo '⏳ Verificando rollout...'
+                        kubectl rollout status deployment/catalogservice \
+                            -n ${K8S_NAMESPACE} --timeout=180s
 
-                    kubectl rollout status deployment/feedbackservice \
-                        -n ${K8S_NAMESPACE} --timeout=180s
+                        kubectl rollout status deployment/feedbackservice \
+                            -n ${K8S_NAMESPACE} --timeout=180s
 
-                    echo '✅ Deploy concluído com sucesso!'
-                    kubectl get pods -n ${K8S_NAMESPACE}
-                """
+                        echo '✅ Deploy concluído com sucesso!'
+                        kubectl get pods -n ${K8S_NAMESPACE}
+                    """
+                }
             }
         }
     }
