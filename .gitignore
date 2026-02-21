@@ -58,3 +58,6 @@ postgres_data/
 node_modules/
 dist/
 
+# Kubernetes / Sensitive Data
+k8s/jenkins-kubeconfig.yaml
+
