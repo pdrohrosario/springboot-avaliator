@@ -113,6 +113,9 @@ pipeline {
         }
 
         stage('Deploy to Kubernetes') {
+            environment {
+                KUBECONFIG = "k8s/jenkins-kubeconfig.yaml"
+            }
             steps {
                 sh """
                     echo '📋 Aplicando manifests K8s...'
