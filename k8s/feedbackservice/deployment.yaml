@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feedbackservice
+  namespace: avaliator
+  labels:
+    app.kubernetes.io/name: feedbackservice
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: avaliator
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: feedbackservice
+  template:
+    metadata:
+      labels:
+        app: feedbackservice
+        app.kubernetes.io/part-of: avaliator
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command:
+            [
+              "sh",
+              "-c",
+              'until nc -z postgres 5432; do echo "Waiting Postgres..."; sleep 2; done',
+            ]
+        - name: wait-for-catalog
+          image: busybox:1.36
+          command:
+            [
+              "sh",
+              "-c",
+              'until nc -z catalogservice 8081; do echo "Waiting Catalog Service..."; sleep 3; done',
+            ]
+      containers:
+        - name: feedbackservice
+          image: localhost:5001/feedbackservice:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8882
+          envFrom:
+            - configMapRef:
+                name: feedbackservice-config
+          env:
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_USER
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_PASSWORD
+          resources:
+            requests:
+              memory: "384Mi"
+              cpu: "250m"
+            limits:
+              memory: "768Mi"
+              cpu: "1000m"
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8882
+            failureThreshold: 30
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8882
+            initialDelaySeconds: 0
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8882
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            failureThreshold: 3
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: feedbackservice
+  namespace: avaliator
+  labels:
+    app.kubernetes.io/name: feedbackservice
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: avaliator
+spec:
+  selector:
+    app: feedbackservice
+  ports:
+    - port: 8882
+      targetPort: 8882
+      protocol: TCP
+  type: ClusterIP

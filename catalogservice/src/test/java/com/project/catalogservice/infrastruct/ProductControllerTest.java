@@ -122,7 +122,7 @@ public class ProductControllerTest {
     }
 
     @Test
-    public void shouldReturnProductWhenIdisNotNull() throws Exception {
+    public void shouldReturnProductWhenIdIsNotNull() throws Exception {
         // Arrange
         when(getProductById.execute(any())).thenReturn(getProductOutput);
 
