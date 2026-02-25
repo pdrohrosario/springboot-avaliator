@@ -260,7 +260,6 @@ springboot-avaliator/
 │       └── config/                      #    Custom Feign error decoder
 │
 └── k8s/                                 # Kubernetes manifests
-    ├── KUBERNETES.md                    # Complete K8s guide
     ├── kind-config.yaml                 # Local cluster config
     ├── setup-cluster.sh                 # Automated setup script
     ├── namespace.yaml                   # "avaliator" namespace
@@ -432,14 +431,24 @@ chmod +x start-dev.sh
 - **Kind** (Kubernetes in Docker)
 - **Kubectl**
 
-### Specialized Scripts
+### Specialized Scripts & Modes
 
-We follow a clean separation of concerns for local development:
+The project supports two main development modes:
 
-| Script | Purpose | When to run |
-|--------|---------|-------------|
-| **`k8s/setup-cluster.sh`** | **Infrastructure Only**: Creates the Kind cluster, connects Docker networks, and deploys Ingress + Postgres. | Run once or when resetting the cluster. |
-| **`start-dev.sh`** | **Orchestrator**: Runs the full application lifecycle (Build -> Image -> Load -> Deploy). | Run whenever you want to update the apps. |
+#### 1. Full Kubernetes Pipeline (Recommended)
+This mode sets up the entire CI/CD infrastructure, creates a local K8s cluster, builds images, and deploys them.
+
+| Script | Purpose |
+|--------|---------|
+| **`start-dev.sh`** | **Master Orchestrator**: Runs the full lifecycle (Infra -> Cluster -> Build -> Load -> Deploy). |
+| **`k8s/setup-cluster.sh`** | **Infrastructure Only**: Recreates the Kind cluster and core services (Ingress, Postgres). |
+
+#### 2. Standalone Docker Compose (Lightweight)
+Use this if you only want to run the microservices with a local database, without Kubernetes or Jenkins.
+
+```bash
+docker compose -f compose-standalone.yaml up -d
+```
 
 ### Access Endpoints
 
