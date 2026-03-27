@@ -2,9 +2,10 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY     = "localhost:5001"
-        MAVEN_IMAGE  = "maven:3.9.7-eclipse-temurin-21-alpine"
-        K8S_NAMESPACE = "avaliator"
+        REGISTRY                      = "${env.REGISTRY ?: 'localhost:5001'}"
+        MAVEN_IMAGE                   = "maven:3.9.7-eclipse-temurin-21-alpine"
+        K8S_NAMESPACE                 = "avaliator"
+        K8S_KUBECONFIG_CREDENTIALS_ID = "${env.K8S_KUBECONFIG_CREDENTIALS_ID ?: 'k8s-kubeconfig'}"
     }
 
     options {
@@ -18,6 +19,17 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Generate Configs') {
+            steps {
+                sh '''
+                    set -a
+                    source .env
+                    set +a
+                    envsubst < k8s/postgres/secret.yaml.tpl > k8s/postgres/secret.yaml
+                '''
             }
         }
 
@@ -114,7 +126,7 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                withCredentials([file(credentialsId: 'k8s-kubeconfig', variable: 'KUBECONFIG')]) {
+                withCredentials([file(credentialsId: "${K8S_KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
                     sh """
                         echo '📋 Aplicando manifests K8s...'
                         kubectl apply -f k8s/namespace.yaml
