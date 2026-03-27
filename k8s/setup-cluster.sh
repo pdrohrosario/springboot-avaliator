@@ -41,12 +41,7 @@ else
     kind create cluster --config k8s/kind-config.yaml --name ${CLUSTER_NAME}
     echo -e "${GREEN}✅ Cluster created!${NC}"
 
-    echo -e "${BLUE}🔗 Connecting cluster to CI/CD network...${NC}"
-    # Conecta todos os nós do cluster na rede do Docker Compose
-    for node in $(kind get nodes --name ${CLUSTER_NAME}); do
-        docker network connect ci-cd_ci-cd-network "${node}" || true
-    done
-    echo -e "${GREEN}✅ Connected to 'ci-cd-network'!${NC}"
+    echo -e "${BLUE}🔗 Cluster created (no local CI network coupling).${NC}"
 fi
 
 kubectl cluster-info --context kind-${CLUSTER_NAME}
@@ -88,6 +83,6 @@ echo -e "${BLUE}📊 Cluster status:${NC}"
 kubectl get nodes
 echo ""
 echo -e "${BLUE}📌 Next steps:${NC}"
-echo -e "  Run ${YELLOW}./start-dev.sh${NC} to deploy the applications."
+echo -e "  Run ${YELLOW}./scripts/up.sh k8s${NC} to deploy the applications."
 echo -e "  Delete cluster:    ${YELLOW}kind delete cluster --name ${CLUSTER_NAME}${NC}"
 echo ""

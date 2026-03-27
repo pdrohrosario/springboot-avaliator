@@ -111,10 +111,9 @@
 |-----------|---------|
 | **Docker** | Service containerization |
 | **Kubernetes (kind)** | Container orchestration |
-| **Jenkins** | Automated CI/CD pipeline |
-| **Docker Registry** | Image storage (localhost:5001) |
-| **Prometheus** | Metrics collection |
-| **Grafana** | Monitoring dashboards |
+| **Jenkins (project pipeline contract)** | Repository-defined CI/CD stages (`Jenkinsfile`) |
+| **Docker Registry (optional local infra)** | Image storage for local platform simulations |
+| **CI Platform (external)** | Shared Jenkins runtime, credentials, governance and reusable libraries |
 
 ### Patterns & Practices
 
@@ -221,7 +220,8 @@ Review (AggregateRoot)
 ```
 springboot-avaliator/
 ├── Jenkinsfile                          # CI/CD pipeline (build → test → K8s deploy)
-├── compose.yaml                         # Docker Compose (local dev)
+├── compose-standalone.yaml              # Docker Compose app stack (local dev)
+├── scripts/                             # Local operation commands (up/down/logs/health/rebuild/reset)
 ├── db/
 │   └── init.sql                         # Database and schema creation
 │
@@ -407,19 +407,18 @@ Content-Type: application/json
 
 ## 🚀 Quick Start (Recommended)
 
-To set up the entire environment (CI/CD infra, Microservices build, and Kubernetes cluster) in one go, run the master orchestrator script from the project root:
+Use explicit local scripts instead of a single orchestrator:
 
 ```bash
-chmod +x start-dev.sh
-./start-dev.sh
+chmod +x scripts/*.sh
+./scripts/up.sh k8s
 ```
 
-**What this script does:**
-1. Starts the **CI/CD Infrastructure** via Docker Compose (Jenkins, Registry, Prometheus, Grafana).
-2. Provisions the **Kubernetes Cluster** using Kind (via `setup-cluster.sh`).
-3. Compiles the **Microservices** using Maven Wrapper.
-4. Builds and loads **Docker Images** into the cluster.
-5. Deploys the applications to Kubernetes and waits for health checks.
+Alternative lightweight mode (no Kubernetes):
+
+```bash
+./scripts/up.sh compose
+```
 
 ---
 
@@ -431,24 +430,33 @@ chmod +x start-dev.sh
 - **Kind** (Kubernetes in Docker)
 - **Kubectl**
 
-### Specialized Scripts & Modes
+### Local Scripts & Modes
 
-The project supports two main development modes:
+The project supports two local modes:
 
-#### 1. Full Kubernetes Pipeline (Recommended)
-This mode sets up the entire CI/CD infrastructure, creates a local K8s cluster, builds images, and deploys them.
+#### 1. Kubernetes Mode
+Builds services locally, loads images in Kind, and deploys manifests.
 
-| Script | Purpose |
+| Command | Purpose |
 |--------|---------|
-| **`start-dev.sh`** | **Master Orchestrator**: Runs the full lifecycle (Infra -> Cluster -> Build -> Load -> Deploy). |
-| **`k8s/setup-cluster.sh`** | **Infrastructure Only**: Recreates the Kind cluster and core services (Ingress, Postgres). |
+| `./scripts/up.sh k8s` | Provision/update local K8s app stack |
+| `./scripts/down.sh k8s` | Remove app manifests from K8s |
+| `./scripts/logs.sh k8s [service]` | Follow K8s logs |
+| `./scripts/health.sh k8s` | Show pods and ingress status |
+| `./scripts/rebuild.sh k8s` | Rebuild images and restart deployments |
+| `./scripts/reset.sh k8s` | Delete Kind cluster |
 
-#### 2. Standalone Docker Compose (Lightweight)
-Use this if you only want to run the microservices with a local database, without Kubernetes or Jenkins.
+#### 2. Compose Mode
+Runs only app + database in Docker Compose.
 
-```bash
-docker compose -f compose-standalone.yaml up -d
-```
+| Command | Purpose |
+|--------|---------|
+| `./scripts/up.sh compose` | Start compose stack |
+| `./scripts/down.sh compose` | Stop compose stack |
+| `./scripts/logs.sh compose [service]` | Follow compose logs |
+| `./scripts/health.sh compose` | Check local health endpoints |
+| `./scripts/rebuild.sh compose` | Rebuild and restart compose stack |
+| `./scripts/reset.sh compose` | Remove compose stack and volumes |
 
 ### Access Endpoints
 
@@ -459,9 +467,6 @@ Once deployed, the services are unified under the Ingress controller:
 | **Ingress Gateway** | [http://localhost](http://localhost) |
 | **Catalog API**     | [http://localhost/catalog/](http://localhost/catalog/) |
 | **Feedback API**    | [http://localhost/feedback/](http://localhost/feedback/) |
-| **Jenkins**         | [http://localhost:8080](http://localhost:8080) |
-| **Prometheus**      | [http://localhost:9090](http://localhost:9090) |
-| **Grafana**         | [http://localhost:3000](http://localhost:3000) |
 
 ---
 
@@ -471,7 +476,7 @@ The cluster is managed by **Kind** and comes with:
 
 - **Resource Labeling**: All project resources are labeled with `app.kubernetes.io/part-of=avaliator` for easy filtering.
 - **Auto-Wait**: The setup scripts use `kubectl wait` to ensure services are fully initialized before completion.
-- **Private Registry**: Seamless integration with the local Docker registry on port 5001.
+- **Private Registry**: expected to be provided by your external CI/CD platform.
 - **Probes**: Liveness and Readiness probes using **Spring Boot Actuator** HTTP endpoints.
 
 ### Useful Commands
@@ -492,15 +497,14 @@ kubectl get ingress -n avaliator
 ## 🔄 CI/CD & Observability
 
 ### Unified Pipeline
-The project is built to work with a local **Jenkins** instance. The pipeline (`Jenkinsfile`) automates:
+This repository owns its `Jenkinsfile` as a project-level pipeline contract. The runtime Jenkins instance is expected to be provided by a shared CI platform project. The pipeline automates:
 1. Standard Maven Build & Test.
 2. Docker Image creation with build-number tags.
 3. Pushing images to the **Local Registry**.
 4. Rolling updates to the Kubernetes cluster.
 
 ### Monitoring
-- **Prometheus**: Scrapes metrics from the cluster and CI/CD services.
-- **Grafana**: Pre-configured dashboards for JVM, Spring Boot, and Kubernetes health.
+- Monitoring stack is optional and can be added incrementally without coupling app startup flow.
 
 ---
 
