@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY                      = "${env.REGISTRY}"
-        MAVEN_IMAGE                   = "${env.MAVEN_IMAGE}"
-        K8S_NAMESPACE                 = "${env.K8S_NAMESPACE}"
-        K8S_KUBECONFIG_CREDENTIALS_ID = "${env.K8S_KUBECONFIG_CREDENTIALS_ID}"
-        ENV_FILE_CREDENTIALS_ID       = "${env.ENV_FILE_CREDENTIALS_ID}"
+        REGISTRY                      = "${env.REGISTRY ?: 'localhost:5001'}"
+        MAVEN_IMAGE                   = "${env.MAVEN_IMAGE ?: 'maven:3.9.7-eclipse-temurin-21-alpine'}"
+        K8S_NAMESPACE                 = "${env.K8S_NAMESPACE ?: 'avaliator'}"
+        K8S_KUBECONFIG_CREDENTIALS_ID = "${env.K8S_KUBECONFIG_CREDENTIALS_ID ?: 'k8s-kubeconfig'}"
+        ENV_FILE_CREDENTIALS_ID       = "${env.ENV_FILE_CREDENTIALS_ID ?: 'env-file'}"
     }
 
     options {
