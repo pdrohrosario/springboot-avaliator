@@ -2,10 +2,11 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY                      = "${env.REGISTRY ?: 'localhost:5001'}"
-        MAVEN_IMAGE                   = "maven:3.9.7-eclipse-temurin-21-alpine"
-        K8S_NAMESPACE                 = "avaliator"
-        K8S_KUBECONFIG_CREDENTIALS_ID = "${env.K8S_KUBECONFIG_CREDENTIALS_ID ?: 'k8s-kubeconfig'}"
+        REGISTRY                      = "${env.REGISTRY}"
+        MAVEN_IMAGE                   = "${env.MAVEN_IMAGE}"
+        K8S_NAMESPACE                 = "${env.K8S_NAMESPACE}"
+        K8S_KUBECONFIG_CREDENTIALS_ID = "${env.K8S_KUBECONFIG_CREDENTIALS_ID}"
+        ENV_FILE_CREDENTIALS_ID       = "${env.ENV_FILE_CREDENTIALS_ID}"
     }
 
     options {
@@ -24,12 +25,15 @@ pipeline {
 
         stage('Generate Configs') {
             steps {
-                sh '''
-                    set -a
-                    source .env
-                    set +a
-                    envsubst < k8s/postgres/secret.yaml.tpl > k8s/postgres/secret.yaml
-                '''
+                withCredentials([file(credentialsId: "${ENV_FILE_CREDENTIALS_ID}", variable: 'ENV_FILE')]) {
+                    sh '''
+                        cp "${ENV_FILE}" .env
+                        set -a
+                        . ./.env
+                        set +a
+                        envsubst < k8s/postgres/secret.yaml.tpl > k8s/postgres/secret.yaml
+                    '''
+                }
             }
         }
 
