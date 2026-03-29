@@ -8,6 +8,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 CLUSTER_NAME="avaliator"
+LOCAL_REGISTRY_CONTAINER_NAME="${LOCAL_REGISTRY_CONTAINER_NAME:-local-registry}"
 
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}  ☸️  K8s Local Setup - Avaliator${NC}"
@@ -42,6 +43,30 @@ else
     echo -e "${GREEN}✅ Cluster created!${NC}"
 
     echo -e "${BLUE}🔗 Cluster created (no local CI network coupling).${NC}"
+fi
+
+CURRENT_SERVER="$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}' 2>/dev/null || true)"
+if echo "${CURRENT_SERVER}" | grep -q "https://0.0.0.0:"; then
+    CONTROL_PLANE_CONTAINER="${CLUSTER_NAME}-control-plane"
+    CONTROL_PLANE_IP="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${CONTROL_PLANE_CONTAINER}" 2>/dev/null || true)"
+    if [ -n "${CONTROL_PLANE_IP}" ]; then
+        echo -e "${YELLOW}⚠️  Fixing kubeconfig server from 0.0.0.0 to ${CONTROL_PLANE_IP}...${NC}"
+        kubectl config set-cluster "kind-${CLUSTER_NAME}" --server="https://${CONTROL_PLANE_IP}:6443" >/dev/null
+        echo -e "${GREEN}✅ kubeconfig server fixed.${NC}"
+    fi
+fi
+
+if docker ps -a --format '{{.Names}}' | grep -q "^${LOCAL_REGISTRY_CONTAINER_NAME}$"; then
+    if [ "$(docker inspect -f '{{json .NetworkSettings.Networks.kind}}' "${LOCAL_REGISTRY_CONTAINER_NAME}")" = "null" ]; then
+        echo -e "${BLUE}🔗 Connecting ${LOCAL_REGISTRY_CONTAINER_NAME} to kind network...${NC}"
+        docker network connect "kind" "${LOCAL_REGISTRY_CONTAINER_NAME}"
+        echo -e "${GREEN}✅ ${LOCAL_REGISTRY_CONTAINER_NAME} connected to kind network!${NC}"
+    else
+        echo -e "${GREEN}✅ ${LOCAL_REGISTRY_CONTAINER_NAME} already connected to kind network.${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠️  Container '${LOCAL_REGISTRY_CONTAINER_NAME}' not found.${NC}"
+    echo -e "${YELLOW}   Start CI/CD compose first so kind can pull images from local registry.${NC}"
 fi
 
 kubectl cluster-info --context kind-${CLUSTER_NAME}

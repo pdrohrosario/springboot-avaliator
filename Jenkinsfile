@@ -178,10 +178,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo '✅ Success! Build #${BUILD_NUMBER}'
+            echo '✅ Success!'
         }
         failure {
-            echo '❌ Failure! Build #${BUILD_NUMBER}'
+            echo '❌ Failure!'
         }
     }
 }
