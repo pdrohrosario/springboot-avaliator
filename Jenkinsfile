@@ -25,6 +25,7 @@ pipeline {
 
         stage('Generate Configs') {
             steps {
+                sh 'apk add --no-cache gettext'
                 withCredentials([file(credentialsId: "${ENV_FILE_CREDENTIALS_ID}", variable: 'ENV_FILE')]) {
                     sh '''
                         cp "${ENV_FILE}" .env
@@ -32,6 +33,7 @@ pipeline {
                         . ./.env
                         set +a
                         envsubst < k8s/postgres/secret.yaml.tpl > k8s/postgres/secret.yaml
+                        envsubst < k8s/jenkins-kubconfig.yaml.tpl > k8s/jenkins-kubconfig.yaml
                     '''
                 }
             }
@@ -130,7 +132,6 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                withCredentials([file(credentialsId: "${K8S_KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
                     sh """
                         echo '📋 Aplicando manifests K8s...'
                         kubectl apply -f k8s/namespace.yaml
@@ -157,8 +158,7 @@ pipeline {
 
                         echo '✅ Deploy concluído com sucesso!'
                         kubectl get pods -n ${K8S_NAMESPACE}
-                    """
-                }
+                    """ 
             }
         }
     }
