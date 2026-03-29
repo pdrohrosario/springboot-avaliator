@@ -25,15 +25,23 @@ pipeline {
 
         stage('Generate Configs') {
             steps {
-                sh 'apk add --no-cache gettext'
+                sh 'apt-get update -qq && apt-get install -y -qq gettext-base > /dev/null'
                 withCredentials([file(credentialsId: "${ENV_FILE_CREDENTIALS_ID}", variable: 'ENV_FILE')]) {
                     sh '''
+                        set -e
+
                         cp "${ENV_FILE}" .env
                         set -a
                         . ./.env
                         set +a
+
                         envsubst < k8s/postgres/secret.yaml.tpl > k8s/postgres/secret.yaml
                         envsubst < k8s/jenkins-kubconfig.yaml.tpl > k8s/jenkins-kubconfig.yaml
+
+                        rm -f .env
+
+                        [ -s k8s/postgres/secret.yaml ] || { echo "ERROR: secret.yaml generation failed"; exit 1; }
+                        [ -s k8s/jenkins-kubconfig.yaml ] || { echo "ERROR: jenkins-kubconfig.yaml generation failed"; exit 1; }
                     '''
                 }
             }
