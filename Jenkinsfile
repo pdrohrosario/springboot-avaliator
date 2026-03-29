@@ -140,6 +140,7 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
+                withCredentials([file(credentialsId: "${K8S_KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
                     sh """
                         echo '📋 Aplicando manifests K8s...'
                         kubectl apply -f k8s/namespace.yaml
@@ -167,6 +168,7 @@ pipeline {
                         echo '✅ Deploy concluído com sucesso!'
                         kubectl get pods -n ${K8S_NAMESPACE}
                     """ 
+                }
             }
         }
     }
