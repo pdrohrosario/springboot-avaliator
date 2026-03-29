@@ -64,6 +64,8 @@ dist/
 # Arquivos gerados por envsubst a partir dos templates .tpl — NUNCA versionar
 k8s/postgres/secret.yaml
 
+k8s/jenkins**
+
 instruction/
 
 project-foundation/
