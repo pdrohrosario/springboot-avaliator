@@ -503,6 +503,24 @@ This repository owns its `Jenkinsfile` as a project-level pipeline contract. The
 3. Pushing images to the **Local Registry**.
 4. Rolling updates to the Kubernetes cluster.
 
+### Jenkins (Docker) ↔ Kind Connectivity
+If Jenkins runs inside Docker and Kind runs on the host, do this:
+
+1. Keep `k8s/kind-config.yaml` with fixed API settings:
+   - `networking.apiServerAddress: "0.0.0.0"`
+   - `networking.apiServerPort: 6443`
+   - `kubeadmConfigPatches` with `certSANs: [host.docker.internal]`
+2. Recreate the Kind cluster after changing the config:
+   - `kind delete cluster --name avaliator`
+   - `kind create cluster --config k8s/kind-config.yaml --name avaliator`
+3. In Jenkins container Compose config, add:
+   - `extra_hosts: ["host.docker.internal:host-gateway"]`
+4. In Jenkins credentials/env template, set:
+   - `URL_SERVER_KUB=https://host.docker.internal:6443`
+5. Generate kubeconfig env variables from Kind:
+   - `./scripts/export-kind-kubeconfig-env.sh avaliator https://host.docker.internal:6443 .env.k8s`
+   - Use generated values for `CLIENT_CERTIFICATE`, `CLIENT_KEY`, `CERTIFICATE_AUTH`, and `URL_SERVER_KUB`.
+
 ### Monitoring
 - Monitoring stack is optional and can be added incrementally without coupling app startup flow.
 

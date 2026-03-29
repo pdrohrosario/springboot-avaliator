@@ -56,18 +56,19 @@ if echo "${CURRENT_SERVER}" | grep -q "https://0.0.0.0:"; then
     fi
 fi
 
-if docker ps -a --format '{{.Names}}' | grep -q "^${LOCAL_REGISTRY_CONTAINER_NAME}$"; then
-    if [ "$(docker inspect -f '{{json .NetworkSettings.Networks.kind}}' "${LOCAL_REGISTRY_CONTAINER_NAME}")" = "null" ]; then
-        echo -e "${BLUE}🔗 Connecting ${LOCAL_REGISTRY_CONTAINER_NAME} to kind network...${NC}"
-        docker network connect "kind" "${LOCAL_REGISTRY_CONTAINER_NAME}"
-        echo -e "${GREEN}✅ ${LOCAL_REGISTRY_CONTAINER_NAME} connected to kind network!${NC}"
+for CONTAINER_NAME in "${LOCAL_REGISTRY_CONTAINER_NAME}" "jenkins"; do
+    if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+        if [ "$(docker inspect -f '{{json .NetworkSettings.Networks.kind}}' "${CONTAINER_NAME}")" = "null" ]; then
+            echo -e "${BLUE}🔗 Connecting ${CONTAINER_NAME} to kind network...${NC}"
+            docker network connect "kind" "${CONTAINER_NAME}"
+            echo -e "${GREEN}✅ ${CONTAINER_NAME} connected to kind network!${NC}"
+        else
+            echo -e "${GREEN}✅ ${CONTAINER_NAME} already connected to kind network.${NC}"
+        fi
     else
-        echo -e "${GREEN}✅ ${LOCAL_REGISTRY_CONTAINER_NAME} already connected to kind network.${NC}"
+        echo -e "${YELLOW}⚠️  Container '${CONTAINER_NAME}' not found — start CI/CD compose first.${NC}"
     fi
-else
-    echo -e "${YELLOW}⚠️  Container '${LOCAL_REGISTRY_CONTAINER_NAME}' not found.${NC}"
-    echo -e "${YELLOW}   Start CI/CD compose first so kind can pull images from local registry.${NC}"
-fi
+done
 
 kubectl cluster-info --context kind-${CLUSTER_NAME}
 
