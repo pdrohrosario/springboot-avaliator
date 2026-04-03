@@ -2,9 +2,11 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY     = "localhost:5001"
-        MAVEN_IMAGE  = "maven:3.9.7-eclipse-temurin-21-alpine"
-        K8S_NAMESPACE = "avaliator"
+        REGISTRY                      = "${env.REGISTRY ?: 'localhost:5001'}"
+        MAVEN_IMAGE                   = "${env.MAVEN_IMAGE ?: 'maven:3.9.7-eclipse-temurin-21-alpine'}"
+        K8S_NAMESPACE                 = "${env.K8S_NAMESPACE ?: 'avaliator'}"
+        K8S_KUBECONFIG_CREDENTIALS_ID = "${env.K8S_KUBECONFIG_CREDENTIALS_ID ?: 'k8s-kubeconfig'}"
+        ENV_FILE_CREDENTIALS_ID       = "${env.ENV_FILE_CREDENTIALS_ID ?: 'env-file'}"
     }
 
     options {
@@ -18,6 +20,30 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Generate Configs') {
+            steps {
+                sh 'apt-get update -qq && apt-get install -y -qq gettext-base > /dev/null'
+                withCredentials([file(credentialsId: "${ENV_FILE_CREDENTIALS_ID}", variable: 'ENV_FILE')]) {
+                    sh '''
+                        set -e
+
+                        cp "${ENV_FILE}" .env
+                        set -a
+                        . ./.env
+                        set +a
+
+                        envsubst < k8s/postgres/secret.yaml.tpl > k8s/postgres/secret.yaml
+                        envsubst < k8s/jenkins-kubconfig.yaml.tpl > k8s/jenkins-kubconfig.yaml
+
+                        rm -f .env
+
+                        [ -s k8s/postgres/secret.yaml ] || { echo "ERROR: secret.yaml generation failed"; exit 1; }
+                        [ -s k8s/jenkins-kubconfig.yaml ] || { echo "ERROR: jenkins-kubconfig.yaml generation failed"; exit 1; }
+                    '''
+                }
             }
         }
 
@@ -114,7 +140,7 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                withCredentials([file(credentialsId: 'k8s-kubeconfig', variable: 'KUBECONFIG')]) {
+                withCredentials([file(credentialsId: "${K8S_KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
                     sh """
                         echo '📋 Aplicando manifests K8s...'
                         kubectl apply -f k8s/namespace.yaml
@@ -141,7 +167,7 @@ pipeline {
 
                         echo '✅ Deploy concluído com sucesso!'
                         kubectl get pods -n ${K8S_NAMESPACE}
-                    """
+                    """ 
                 }
             }
         }
@@ -152,10 +178,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo '✅ Success! Build #${BUILD_NUMBER}'
+            echo '✅ Success!'
         }
         failure {
-            echo '❌ Failure! Build #${BUILD_NUMBER}'
+            echo '❌ Failure!'
         }
     }
 }

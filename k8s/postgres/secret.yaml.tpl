@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/component: database
     app.kubernetes.io/part-of: avaliator
 type: Opaque
-data:
-  POSTGRES_USER: YWRtaW4xMjM=
-  POSTGRES_PASSWORD: YWRtaW4xMjM=
-  POSTGRES_DB: YXZhbGlhdG9y
+stringData:
+  POSTGRES_USER: ${POSTGRES_USER}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  POSTGRES_DB: ${POSTGRES_DB}

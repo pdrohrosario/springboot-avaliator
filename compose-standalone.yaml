@@ -2,9 +2,11 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: postgres_db
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: admin123
-      POSTGRES_PASSWORD: admin123
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -20,12 +22,14 @@ services:
     restart: always
     depends_on:
       - postgres
+    env_file:
+      - .env
     environment:
       SPRING_APPLICATION_NAME: catalogservice
       SERVER_PORT: 8081
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/avaliator
-      SPRING_DATASOURCE_USERNAME: admin123
-      SPRING_DATASOURCE_PASSWORD: admin123
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: none
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
@@ -51,12 +55,14 @@ services:
    depends_on:
      - postgres
      - app-catalog
+   env_file:
+     - .env
    environment:
      SPRING_APPLICATION_NAME: feedbackservice
      SERVER_PORT: 8882
-     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/avaliator
-     SPRING_DATASOURCE_USERNAME: admin123
-     SPRING_DATASOURCE_PASSWORD: admin123
+     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+     SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+     SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
      SPRING_JPA_HIBERNATE_DDL_AUTO: none
      SPRING_JPA_SHOW_SQL: "true"
      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
