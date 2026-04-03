@@ -50,10 +50,10 @@ Dependency management: `org.springframework.cloud:spring-cloud-dependencies:2025
 Notes:
 
 - Spring Cloud BOM `2025.0.1` manages OpenFeign version.
-- `spring-kafka` is declared but no Kafka producer/consumer code is active yet (planned for metricsservice integration).
+- `spring-kafka` is declared but no Kafka producer/consumer code is active yet (planned for metricservice integration).
 - H2 version is NOT pinned (uses BOM default, unlike catalogservice).
 
-## Metricsservice — Planned
+## Metricservice — Planned
 
 Status: planned. No pom.xml exists yet.
 
@@ -69,7 +69,7 @@ Expected dependencies:
 
 - Shared logical event contract: `ReviewCreated v1`.
 - Producer: feedbackservice (via spring-kafka, planned activation).
-- Consumer: metricsservice (planned).
+- Consumer: metricservice (planned).
 - Versioning rule: additive changes only for the same major version.
 - Consumer must reject invalid contract payload and route to DLQ.
 
@@ -78,7 +78,7 @@ Expected dependencies:
 | From | To | Mechanism | Library |
 |---|---|---|---|
 | feedbackservice | catalogservice | Synchronous HTTP | Spring Cloud OpenFeign |
-| feedbackservice | metricsservice (planned) | Async event | Spring Kafka |
+| feedbackservice | metricservice (planned) | Async event | Spring Kafka |
 
 Feign configuration:
 

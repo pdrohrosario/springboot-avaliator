@@ -15,7 +15,7 @@ Services follow Hexagonal Architecture (Ports and Adapters) combined with DDD.
 |---|---|---|---|
 | catalogservice | 8081 | Implemented | Product lifecycle, catalog queries |
 | feedbackservice | 8882 | Implemented | Review lifecycle, product validation via Feign |
-| metricsservice | TBD | Planned | Asynchronous consolidation of product rating metrics |
+| metricservice | TBD | Planned | Asynchronous consolidation of product rating metrics |
 
 ## Implementation Status
 
@@ -30,9 +30,9 @@ Current state (as-is):
 
 Target state (to-be):
 
-- Add metricsservice as independent bounded context.
+- Add metricservice as independent bounded context.
 - feedbackservice emits review-created events via Kafka.
-- metricsservice consumes events and exposes aggregated metrics query API.
+- metricservice consumes events and exposes aggregated metrics query API.
 - Add `metrics_schema` to PostgreSQL.
 - Add Kafka broker to compose and K8s topology.
 
@@ -289,15 +289,15 @@ Common base (same structure as catalogservice):
 5. If product not found, `ProductNotFoundException` (404) is returned.
 6. If catalogservice is unreachable, `ApiIntegrationException` (503) is returned.
 
-### Planned: feedbackservice → metricsservice (Kafka event)
+### Planned: feedbackservice → metricservice (Kafka event)
 
 1. After review creation, feedbackservice publishes `ReviewCreated v1` event to Kafka topic.
-2. metricsservice consumes the event asynchronously.
-3. metricsservice updates pre-computed `ProductMetrics` aggregate idempotently.
+2. metricservice consumes the event asynchronously.
+3. metricservice updates pre-computed `ProductMetrics` aggregate idempotently.
 
 ---
 
-## Metricsservice — Planned Architecture
+## Metricservice — Planned Architecture
 
 Business scope mapped to architecture:
 
@@ -316,7 +316,7 @@ Constraints:
 ### ADR-01 — Dedicated bounded context for metrics
 
 Decision:
-- Introduce metricsservice as an independent bounded context.
+- Introduce metricservice as an independent bounded context.
 
 Rationale:
 - Keeps single responsibility and isolates analytical aggregation logic.

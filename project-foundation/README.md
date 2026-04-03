@@ -5,7 +5,7 @@ This directory is the source of truth for architecture, database, dependencies, 
 ## Status Convention
 
 - **As-is (current state)**: reflects what is implemented, tested, and versioned in the repository.
-- **To-be (planned state)**: reflects approved evolution not yet coded (e.g., metricsservice).
+- **To-be (planned state)**: reflects approved evolution not yet coded (e.g., metricservice).
 
 ## Services Covered
 
@@ -13,7 +13,7 @@ This directory is the source of truth for architecture, database, dependencies, 
 |---|---|---|
 | catalogservice | Implemented | Full architecture, DB schema, dependencies, infra |
 | feedbackservice | Implemented | Full architecture, DB schema, dependencies, infra |
-| metricsservice | Planned | Architecture design, DB model, dependency forecast |
+| metricservice | Planned | Architecture design, DB model, dependency forecast |
 
 ## Index
 

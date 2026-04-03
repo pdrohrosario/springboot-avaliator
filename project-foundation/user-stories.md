@@ -35,10 +35,10 @@ Acceptance criteria:
 - Comment is required and limited to 500 chars.
 - Review creation returns generated review identity and fields.
 
-## Epic 3: Product Rating Metrics (`metricsservice` - planned)
+## Epic 3: Product Rating Metrics (`metricservice` - planned)
 
 ### US-05 Update product metrics from review-created event
-As a product analyst, I want metricsservice to update product rating metrics whenever a new review is created, so that product quality indicators are always available.
+As a product analyst, I want metricservice to update product rating metrics whenever a new review is created, so that product quality indicators are always available.
 
 Acceptance criteria:
 - Event processing is asynchronous and eventually consistent.

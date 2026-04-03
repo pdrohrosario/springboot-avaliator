@@ -1,10 +1,10 @@
-package com.project.metricsservice;
+package com.project.metricservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MetricsserviceApplicationTests {
+class MetricserviceApplicationTests {
 
 	@Test
 	void contextLoads() {

@@ -8,7 +8,7 @@ The system uses PostgreSQL 15 (Alpine) with a single database instance (`avaliat
 |---|---|---|
 | `catalog_schema` | catalogservice | Implemented |
 | `feedback_schema` | feedbackservice | Implemented |
-| `metrics_schema` | metricsservice | Planned |
+| `metrics_schema` | metricservice | Planned |
 
 ## Initialization
 
@@ -24,7 +24,7 @@ CREATE SCHEMA IF NOT EXISTS catalog_schema;
 CREATE SCHEMA IF NOT EXISTS feedback_schema;
 ```
 
-`metrics_schema` must be introduced through a controlled migration/update step when metricsservice is added.
+`metrics_schema` must be introduced through a controlled migration/update step when metricservice is added.
 
 ## Flyway Configuration
 

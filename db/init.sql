@@ -4,3 +4,4 @@ CREATE DATABASE avaliator;
 
 CREATE SCHEMA IF NOT EXISTS catalog_schema;
 CREATE SCHEMA IF NOT EXISTS feedback_schema;
+CREATE SCHEMA IF NOT EXISTS metric_schema;
