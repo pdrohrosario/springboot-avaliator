@@ -86,6 +86,7 @@
 | From → To | Method | Purpose |
 |-----------|--------|---------|
 | Feedback → Catalog | **OpenFeign** (synchronous HTTP) | Validate product existence before creating a review |
+| Feedback → Metrics | **Event (asynchronous)** | Update product rating aggregates after review creation |
 
 ---
 
@@ -212,6 +213,22 @@ Review (AggregateRoot)
 | Method | Path | Description | Status |
 |--------|------|-------------|--------|
 | `POST` | `/review/create` | Create review | `201 Created` |
+
+---
+
+### 3. Metrics Service — Product Rating Aggregation (planned)
+
+| | |
+|---|---|
+| **Communication** | Asynchronous event consumption |
+| **Responsibility** | Consolidate product rating metrics |
+
+#### Features
+
+- Consumes review-created events emitted by Feedback Service
+- Maintains product-level aggregates: total reviews, average rating, rating distribution (1..5)
+- Applies idempotent processing by review identity to avoid double counting
+- Operates with eventual consistency
 
 ---
 

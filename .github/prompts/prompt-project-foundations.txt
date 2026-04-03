@@ -1,0 +1,93 @@
+This prompt must follow `instruction/prompt-general-rules.txt`.
+
+You are an automation assistant working in the current repository.
+
+Objective:
+Automate creation and maintenance of files and baseline structure related to project foundations, with consistency, maintainability, and full specification depth.
+
+Requirements:
+1) Analyze the current repository structure.
+2) Create (if missing) an English directory for project foundations.
+   - Required name: `project-foundation`.
+3) Inside that directory, enforce EXACTLY this structure (no extra required files):
+   - `architecture.md`
+   - `database.md`
+   - `dependencies.md`
+   - `user-stories.md`
+   - `infrastructure.md`
+4) If any of the required files are missing, create them following the depth standard below.
+5) Do not overwrite existing content without backup or explicit confirmation.
+6) Ensure file names and section titles remain consistent with this exact structure.
+7) Update repository references when applicable (README, scripts, CI/CD, etc.).
+8) At the end, display:
+   - created folder tree
+   - generated/updated files
+   - change summary (`git status`)
+
+## Content Depth Standard
+
+Each foundation file must be written with the following minimum level of detail. Use the existing `project-foundation/` files as the reference.
+
+### architecture.md
+
+Required sections per service:
+- Service landscape table (service, port, status, responsibility).
+- Implementation status: as-is (current) and to-be (planned) with clear separation.
+- Package structure: tree diagram showing every layer and sub-package.
+- Domain layer: aggregate root with all fields (name, type, constraints, defaults), value objects, enums (all values listed), factory methods, domain exceptions, repository contract (all methods).
+- Application layer: every input/output port (interface, DTO records with fields), every use case (name, step-by-step behavior), every DTO as record with field list.
+- Infrastructure layer: controller (annotation, base path, endpoints with HTTP method/path/status), JPA entity (table, schema), JPA repository (extends, custom queries), adapters (name, port implemented), mappers, Feign client (annotation, URL, endpoint), error decoder (status → exception), exception handler (exception → HTTP status).
+- Inter-service flows: numbered steps for happy and error paths.
+- ADR-style decisions for non-obvious choices.
+
+### database.md
+
+Required sections per schema:
+- Overview table (schema, service, status).
+- Initialization: content of init.sql described.
+- Flyway configuration and rules.
+- Full DDL from each migration file (copy of actual SQL).
+- Column detail table: column, type, constraints, domain mapping.
+- JPA mapping notes (entity, schema).
+- Domain-vs-DB discrepancies (e.g., domain requires but column allows null).
+- Database connectivity config per runtime mode (Compose host/port, K8s host/port, test H2).
+- Safety rules.
+
+### dependencies.md
+
+Required sections per service:
+- Runtime platform (Java version, Maven wrapper).
+- Spring Boot parent version.
+- Dependency management BOMs with versions.
+- Dependency table: artifact, groupId, scope, purpose.
+- Pinned version notes (when overriding BOM default).
+- Active-vs-inactive notes (e.g., declared but not yet used).
+- Inter-service integration table (from, to, mechanism, library).
+- Docker build chain (build image, runtime image).
+- Dependency guidelines.
+
+### infrastructure.md
+
+Required sections:
+- Runtime modes table.
+- Operational scripts table (script, description).
+- Dockerfile pattern: base images per stage, working dir, exposed port, entrypoint.
+- Compose topology: ASCII diagram, per-container config (image, ports, env vars, volumes, depends_on, network).
+- Kubernetes: cluster config (nodes, port mappings, registry mirrors), namespace, each deployment (replicas, strategy, init containers, probes (type, path, periods, thresholds), resource requests/limits), configmaps (key list), secrets (generation method), ingress (class, annotations, path rules).
+- CI/CD: environment variables, credentials, stage-by-stage breakdown with commands.
+- Setup/bootstrap scripts: execution flow as numbered steps.
+- Planned evolution section with additions needed for future services.
+- Security notes.
+
+### user-stories.md
+
+- Epics with scope description and status.
+- User stories with ID, title, narrative (As/I want/So that), acceptance criteria, and technical notes.
+- Each criterion must be testable and traceable.
+
+Quality criteria:
+- Clear and standardized naming
+- Useful detailed content (not empty placeholders)
+- Idempotent behavior (safe to run multiple times)
+- Exact adherence to the required five-file foundation structure
+- Depth matching the reference standard above
