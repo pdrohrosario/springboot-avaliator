@@ -8,7 +8,7 @@ The system uses PostgreSQL 15 (Alpine) with a single database instance (`avaliat
 |---|---|---|
 | `catalog_schema` | catalogservice | Implemented |
 | `feedback_schema` | feedbackservice | Implemented |
-| `metrics_schema` | metricservice | Planned |
+| `metric_schema` | metricservice | Planned |
 
 ## Initialization
 
@@ -24,7 +24,7 @@ CREATE SCHEMA IF NOT EXISTS catalog_schema;
 CREATE SCHEMA IF NOT EXISTS feedback_schema;
 ```
 
-`metrics_schema` must be introduced through a controlled migration/update step when metricservice is added.
+`metric_schema` must be introduced through a controlled migration/update step when metricservice is added.
 
 ## Flyway Configuration
 
@@ -117,7 +117,7 @@ Notes:
 No cross-schema foreign keys exist. Referential integrity per schema boundary:
 
 - `review.product_id` → validated by Feign call to catalogservice (synchronous).
-- `metrics_schema` data (planned) → validated from Kafka event contract, no FK to other schemas.
+- `metric_schema` data (planned) → validated from Kafka event contract, no FK to other schemas.
 
 ## Metrics Schema — Planned
 

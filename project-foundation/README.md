@@ -24,6 +24,7 @@ This directory is the source of truth for architecture, database, dependencies, 
 | [dependencies.md](./dependencies.md) | Per-service dependency tables with versions and scopes, inter-service integration libraries |
 | [user-stories.md](./user-stories.md) | Product requirements and acceptance criteria (US-01 through US-06) |
 | [infrastructure.md](./infrastructure.md) | Dockerfiles, Docker Compose topology, Kubernetes manifests detail, CI/CD pipeline stages, setup scripts |
+| [development-plan.md](./development-plan.md) | Evidence-based execution roadmap, gap analysis, phased timeline, stage checklists, and next-step guidance |
 
 ## Usage Rules
 

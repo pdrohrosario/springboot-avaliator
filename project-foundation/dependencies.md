@@ -53,7 +53,7 @@ Notes:
 - `spring-kafka` is declared but no Kafka producer/consumer code is active yet (planned for metricservice integration).
 - H2 version is NOT pinned (uses BOM default, unlike catalogservice).
 
-## Metricservice — Planned
+## MetricService — Planned
 
 Status: planned. No pom.xml exists yet.
 
@@ -61,7 +61,7 @@ Expected dependencies:
 
 - Same Spring Boot baseline: web, data-jpa, validation, actuator.
 - Spring Kafka (+ test) for `ReviewCreated v1` event consumption.
-- Flyway (core + PostgreSQL) for `metrics_schema` migrations.
+- Flyway (core + PostgreSQL) for `metric_schema` migrations.
 - PostgreSQL driver (runtime).
 - H2 (tests).
 

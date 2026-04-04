@@ -33,7 +33,7 @@ Target state (to-be):
 - Add metricservice as independent bounded context.
 - feedbackservice emits review-created events via Kafka.
 - metricservice consumes events and exposes aggregated metrics query API.
-- Add `metrics_schema` to PostgreSQL.
+- Add `metric_schema` to PostgreSQL.
 - Add Kafka broker to compose and K8s topology.
 
 ## Key Boundaries
@@ -297,7 +297,7 @@ Common base (same structure as catalogservice):
 
 ---
 
-## Metricservice — Planned Architecture
+## MetricService — Planned Architecture
 
 Business scope mapped to architecture:
 
@@ -504,7 +504,7 @@ Failure behavior:
 
 Schema:
 
-- metrics_schema
+- metric_schema
 
 Tables:
 
