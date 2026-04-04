@@ -1,4 +1,6 @@
-CREATE TABLE IF NOT EXISTS product_metric (
+CREATE SCHEMA IF NOT EXISTS metric_schema;
+
+CREATE TABLE IF NOT EXISTS metric_schema.product_metric (
     product_id      UUID            PRIMARY KEY,
     total_reviews   BIGINT          NOT NULL DEFAULT 0,
     rating_sum      BIGINT          NOT NULL DEFAULT 0,
