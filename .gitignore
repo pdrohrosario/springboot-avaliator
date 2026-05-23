@@ -65,7 +65,3 @@ dist/
 k8s/postgres/secret.yaml
 
 k8s/jenkins-kubconfig.yaml
-
-instruction/
-
-project-foundation/

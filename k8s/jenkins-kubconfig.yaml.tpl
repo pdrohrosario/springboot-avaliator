@@ -2,7 +2,7 @@ apiVersion: v1
 clusters:
   - cluster:
       certificate-authority-data: ${CERTIFICATE_AUTH}
-      server: ${URL_SERVER_KUB}
+      server: https://avaliator-control-plane:6443
     name: kind-avaliator
 contexts:
   - context:

@@ -86,6 +86,7 @@
 | From → To | Method | Purpose |
 |-----------|--------|---------|
 | Feedback → Catalog | **OpenFeign** (synchronous HTTP) | Validate product existence before creating a review |
+| Feedback → Metrics | **Event (asynchronous)** | Update product rating aggregates after review creation |
 
 ---
 
@@ -151,7 +152,7 @@
 Product (AggregateRoot)
 ├── id: ProductId (UUID)         // Value Object
 ├── name: String                  // max 50 chars, required
-├── price: BigDecimal             // non-negative, required
+├── price: BigDecimal             // strictly positive (> 0.00), required
 ├── description: String           // optional
 ├── category: ProductCategory     // validated enum
 ├── status: ProductStatus         // AVAILABLE (default)
@@ -160,7 +161,7 @@ Product (AggregateRoot)
 
 **Business rules:**
 - Name cannot be null, empty, or exceed 50 characters
-- Price cannot be negative
+- Price must be strictly positive (strictly greater than zero, price > 0.00)
 - Category must be a valid `ProductCategory` enum value
 - Status starts as `AVAILABLE`
 - Duplicate product names are rejected (`ProductAlreadyExistsException`)
@@ -188,6 +189,7 @@ Product (AggregateRoot)
 - Review creation with domain validation
 - Integration with Catalog Service via **OpenFeign** to validate product existence
 - Integration error handling (`ApiIntegrationException`, `ResourceNotFoundException`)
+- Externalized Feign client configuration (base URL set via `application.properties`)
 - Custom Feign error decoder configuration
 
 #### Domain Entity: `Review`
@@ -203,15 +205,35 @@ Review (AggregateRoot)
 
 **Business rules:**
 - Rating must be between 1 and 5
-- Comment is required, maximum 500 characters
+- Comment is required, maximum 500 characters, validated at the API boundary using `@NotBlank` and `@Size(max = 500)`
 - ProductId must be valid (verified via Feign against Catalog Service)
 - If the product doesn't exist, throws `ProductNotFoundException`
+- If the product ID is malformed or invalid, throws `ProductIdIsNotValidException` (returns HTTP 400)
+- Exposes no public setters; all aggregate mutations are protected and must run through domain validation
 
 #### Endpoints
 
 | Method | Path | Description | Status |
 |--------|------|-------------|--------|
 | `POST` | `/review/create` | Create review | `201 Created` |
+
+---
+
+### 3. Metrics Service — Product Rating Aggregation (planned)
+
+| | |
+|---|---|
+| **Communication** | Asynchronous event consumption |
+| **Responsibility** | Consolidate product rating metrics |
+| **Status** | Planned / Early Scaffolding (Flyway migrations exist, production code planned) |
+
+#### Features
+
+- Consumes review-created events emitted by Feedback Service
+- Maintains product-level aggregates: total reviews, average rating, rating distribution (1..5)
+- Applies idempotent processing by review identity to avoid double counting
+- Operates with eventual consistency
+- Database migrations are fully scaffolded, but production application code is yet to be developed.
 
 ---
 
@@ -502,6 +524,24 @@ This repository owns its `Jenkinsfile` as a project-level pipeline contract. The
 2. Docker Image creation with build-number tags.
 3. Pushing images to the **Local Registry**.
 4. Rolling updates to the Kubernetes cluster.
+
+### Jenkins (Docker) ↔ Kind Connectivity
+If Jenkins runs inside Docker and Kind runs on the host, do this:
+
+1. Keep `k8s/kind-config.yaml` with fixed API settings:
+   - `networking.apiServerAddress: "0.0.0.0"`
+   - `networking.apiServerPort: 6443`
+   - `kubeadmConfigPatches` with `certSANs: [host.docker.internal]`
+2. Recreate the Kind cluster after changing the config:
+   - `kind delete cluster --name avaliator`
+   - `kind create cluster --config k8s/kind-config.yaml --name avaliator`
+3. In Jenkins container Compose config, add:
+   - `extra_hosts: ["host.docker.internal:host-gateway"]`
+4. In Jenkins credentials/env template, set:
+   - `URL_SERVER_KUB=https://host.docker.internal:6443`
+5. Generate kubeconfig env variables from Kind:
+   - `./scripts/export-kind-kubeconfig-env.sh avaliator https://host.docker.internal:6443 .env.k8s`
+   - Use generated values for `CLIENT_CERTIFICATE`, `CLIENT_KEY`, `CERTIFICATE_AUTH`, and `URL_SERVER_KUB`.
 
 ### Monitoring
 - Monitoring stack is optional and can be added incrementally without coupling app startup flow.
