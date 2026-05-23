@@ -152,7 +152,7 @@
 Product (AggregateRoot)
 ├── id: ProductId (UUID)         // Value Object
 ├── name: String                  // max 50 chars, required
-├── price: BigDecimal             // non-negative, required
+├── price: BigDecimal             // strictly positive (> 0.00), required
 ├── description: String           // optional
 ├── category: ProductCategory     // validated enum
 ├── status: ProductStatus         // AVAILABLE (default)
@@ -161,7 +161,7 @@ Product (AggregateRoot)
 
 **Business rules:**
 - Name cannot be null, empty, or exceed 50 characters
-- Price cannot be negative
+- Price must be strictly positive (strictly greater than zero, price > 0.00)
 - Category must be a valid `ProductCategory` enum value
 - Status starts as `AVAILABLE`
 - Duplicate product names are rejected (`ProductAlreadyExistsException`)
@@ -189,6 +189,7 @@ Product (AggregateRoot)
 - Review creation with domain validation
 - Integration with Catalog Service via **OpenFeign** to validate product existence
 - Integration error handling (`ApiIntegrationException`, `ResourceNotFoundException`)
+- Externalized Feign client configuration (base URL set via `application.properties`)
 - Custom Feign error decoder configuration
 
 #### Domain Entity: `Review`
@@ -204,9 +205,11 @@ Review (AggregateRoot)
 
 **Business rules:**
 - Rating must be between 1 and 5
-- Comment is required, maximum 500 characters
+- Comment is required, maximum 500 characters, validated at the API boundary using `@NotBlank` and `@Size(max = 500)`
 - ProductId must be valid (verified via Feign against Catalog Service)
 - If the product doesn't exist, throws `ProductNotFoundException`
+- If the product ID is malformed or invalid, throws `ProductIdIsNotValidException` (returns HTTP 400)
+- Exposes no public setters; all aggregate mutations are protected and must run through domain validation
 
 #### Endpoints
 
@@ -222,6 +225,7 @@ Review (AggregateRoot)
 |---|---|
 | **Communication** | Asynchronous event consumption |
 | **Responsibility** | Consolidate product rating metrics |
+| **Status** | Planned / Early Scaffolding (Flyway migrations exist, production code planned) |
 
 #### Features
 
@@ -229,6 +233,7 @@ Review (AggregateRoot)
 - Maintains product-level aggregates: total reviews, average rating, rating distribution (1..5)
 - Applies idempotent processing by review identity to avoid double counting
 - Operates with eventual consistency
+- Database migrations are fully scaffolded, but production application code is yet to be developed.
 
 ---
 

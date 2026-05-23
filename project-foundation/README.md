@@ -13,7 +13,7 @@ This directory is the source of truth for architecture, database, dependencies, 
 |---|---|---|
 | catalogservice | Implemented | Full architecture, DB schema, dependencies, infra |
 | feedbackservice | Implemented | Full architecture, DB schema, dependencies, infra |
-| metricsservice | Planned | Architecture design, DB model, dependency forecast |
+| metricsservice | Planned (Early Scaffolding) | Architecture design, DB model, dependency forecast |
 
 ## Index
 
