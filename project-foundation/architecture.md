@@ -15,7 +15,7 @@ Services follow Hexagonal Architecture (Ports and Adapters) combined with DDD.
 |---|---|---|---|
 | catalogservice | 8081 | Implemented | Product lifecycle, catalog queries |
 | feedbackservice | 8882 | Implemented | Review lifecycle, product validation via Feign |
-| metricsservice | TBD | Planned | Asynchronous consolidation of product rating metrics |
+| metricsservice | 8083 | Implemented | Asynchronous consolidation of product rating metrics |
 
 ## Implementation Status
 
@@ -27,13 +27,10 @@ Current state (as-is):
 - Migrations managed by Flyway per service.
 - Deployment: Docker Compose and Kubernetes (kind).
 - CI/CD: Jenkins pipeline covering build, test, image push, and K8s deploy for both services.
+- `metricsservice` is fully implemented: consuming Kafka events, updating metrics idempotently, and serving the metrics query API.
 
 Target state (to-be):
 
-- Add metricsservice as independent bounded context.
-- feedbackservice emits review-created events via Kafka.
-- metricsservice consumes events and exposes aggregated metrics query API.
-- Add `metrics_schema` to PostgreSQL.
 - Add Kafka broker to compose and K8s topology.
 
 ## Key Boundaries
@@ -77,7 +74,7 @@ Product (AggregateRoot):
 
 - id: ProductId (Value Object wrapping UUID)
 - name: String (required, unique, max 50 chars)
-- price: BigDecimal (required, non-negative)
+- price: BigDecimal (required, strictly positive > 0.00)
 - description: String (optional)
 - category: ProductCategory enum (ELECTRONICS, CLOTHING, TOYS, BOOKS, SPORTS_EQUIPMENT)
 - status: ProductStatus enum (AVAILABLE, SOLD_OUT, INACTIVE) — defaults to AVAILABLE
@@ -104,7 +101,7 @@ Input ports (driving interfaces):
 - `CreateProduct` — receives CreateProductInput, returns CreateProductOutput.
 - `GetProductById` — receives String id, returns GetProductOutput.
 - `GetProductsByNameAndDescription` — receives filter input, returns PaginatedResponse of GetProductOutput.
-- `UpdateProduct` — receives Product, returns Product.
+- `UpdateProduct` — receives `UpdateProductInput` (containing UUID-based `ProductId`), returns `UpdateProductOutput`.
 
 Output ports (driven interfaces):
 
@@ -118,6 +115,7 @@ Use cases:
 - `CreateProductUseCase` — checks name uniqueness via FindProductByName, creates domain Product, persists via SaveProduct.
 - `GetProductByIdUseCase` — converts string to ProductId, fetches via FindById, throws ProductNotFound if absent.
 - `GetProductsByUsernameAndDescriptionUseCase` — delegates paginated query and maps results.
+- `UpdateProductUseCase` [Planned] — receives `UpdateProductInput`, checks name uniqueness if changed, loads Product via FindById, updates domain invariants, and persists via SaveProduct.
 
 DTOs (records):
 
@@ -134,6 +132,7 @@ HTTP adapter (controller):
   - `POST /product/create` — 201 Created
   - `GET /product/{id}` — 200 OK
   - `GET /product/get-products?name=&description=&page=&size=&sort=` — 200 OK (paginated)
+  - `PUT /product/update` — 200 OK
 
 JPA persistence:
 
@@ -182,6 +181,7 @@ com.project.feedbackservice.review
 │   ├── output/
 │   │   ├── adapter/           # SaveReviewAdapter
 │   │   │   └── product/       # Feign client + FindProductByIdAdapter
+│   │   ├── broker/            # KafkaReviewCreatedPublisher, ReviewCreatedEvent DTO
 │   │   ├── entities/          # JpaReview
 │   │   ├── repository/        # JpaReviewRepository, ReviewRepositoryImpl
 │   │   └── mapper/            # ReviewPersistenceMapper
@@ -211,6 +211,12 @@ Factory methods:
 - `Review.create(productId, rating, comment)` — generates ReviewId, validates all fields.
 - `Review.fromEntity(id, productId, rating, comment, createdAt)` — reconstitution from persistence.
 
+Domain invariants:
+- **No Public Setters**: `Review` is a DDD Aggregate Root. To protect domain integrity, public setters are prohibited. All mutations must go through validated factory methods or explicit mutation operations.
+- **Rating Constraint**: Rating must be between 1 and 5.
+- **Comment Constraint**: Comment must be non-blank and max 500 characters.
+- **Product ID Constraint**: ProductId must be a valid UUID.
+
 Domain exceptions:
 
 - `ProductNotFoundException` — product ID does not exist in catalogservice.
@@ -230,10 +236,11 @@ Output ports:
 
 - `SaveReview` — persists a Review domain object.
 - `FindProductById` — validates product existence (returns boolean).
+- `PublishReviewCreatedEvent` — emits domain event when review is successfully created.
 
 Use case:
 
-- `CreateReviewUseCase` — parses and validates ProductId, checks product existence via FindProductById (Feign), creates Review, persists via SaveReview.
+- `CreateReviewUseCase` — parses and validates ProductId, checks product existence via FindProductById (Feign), creates Review, persists via SaveReview, and emits event via PublishReviewCreatedEvent.
 
 DTOs (records):
 
@@ -249,7 +256,7 @@ HTTP adapter (controller):
 
 Request/response records:
 
-- `CreateReviewRequest(productId @NotBlank, rating @NotNull, comment)`
+- `CreateReviewRequest(productId @NotBlank, rating @NotNull, comment @NotBlank @Size(max = 500))` — comment is validated at the API boundary.
 - `CreateReviewResponse(reviewId, productId, rating, comment, createdAt)`
 - `GetProductResponse` — maps catalogservice product response for Feign.
 
@@ -262,14 +269,19 @@ JPA persistence:
 
 Feign integration:
 
-- `ProductClient` (@FeignClient, url `http://catalogservice:8081`) — `GET /product/{id}`.
-- `FindProductByIdAdapter` — implements FindProductById, catches `ResourceNotFoundException` → `ProductNotFoundException`, `RetryableException` → `ApiIntegrationException`.
+- `ProductClient` (@FeignClient, url configured via `${feign.client.catalogservice.url}`) — the URL is externalized to `application.properties` rather than hardcoded.
+- `FindProductByIdAdapter` — implements FindProductById, catches `ResourceNotFoundException` → `ProductNotFoundException`, `RetryableException` or `ApiIntegrationException` → re-throws as `ApiIntegrationException` (mapped to HTTP 503 by `CustomExceptionHandler`) to ensure integration errors are clean and not wrapped into Hibernate-specific exceptions.
 - `CustomFeignErrorDecoder` — maps HTTP status to domain-relevant exceptions (400→IllegalArgument, 404→ResourceNotFound, 5xx→ApiIntegration).
 - `FeignClientConfiguration` — registers the custom error decoder.
 
+Kafka integration:
+
+- `KafkaReviewCreatedPublisher` — implements PublishReviewCreatedEvent using `KafkaTemplate`.
+- `ReviewCreatedEvent` — the outgoing DTO representing the event payload.
+
 Config:
 
-- `CustomExceptionHandler` (@RestControllerAdvice) — handles MethodArgumentNotValidException (400), ProductNotFoundException (404), IllegalArgumentException (400), ApiIntegrationException (503).
+- `CustomExceptionHandler` (@RestControllerAdvice) — handles MethodArgumentNotValidException (400), ProductNotFoundException (404), IllegalArgumentException (400), ProductIdIsNotValidException (400), ApiIntegrationException (503).
 - `ErrorMessage`, `ApiIntegrationException`, `ResourceNotFoundException`.
 
 Common base (same structure as catalogservice):
@@ -289,15 +301,15 @@ Common base (same structure as catalogservice):
 5. If product not found, `ProductNotFoundException` (404) is returned.
 6. If catalogservice is unreachable, `ApiIntegrationException` (503) is returned.
 
-### Planned: feedbackservice → metricsservice (Kafka event)
+### Current: feedbackservice → metricservice (Kafka event)
 
-1. After review creation, feedbackservice publishes `ReviewCreated v1` event to Kafka topic.
-2. metricsservice consumes the event asynchronously.
-3. metricsservice updates pre-computed `ProductMetrics` aggregate idempotently.
+1. After review creation, feedbackservice publishes `ReviewCreated v1` event to the `review-created` Kafka topic.
+2. metricservice consumes the event asynchronously via `KafkaReviewCreatedListener`.
+3. metricservice updates pre-computed `ProductMetrics` aggregate idempotently.
 
 ---
 
-## Metricsservice — Planned Architecture
+## MetricService — Detailed Architecture
 
 Business scope mapped to architecture:
 
@@ -316,7 +328,7 @@ Constraints:
 ### ADR-01 — Dedicated bounded context for metrics
 
 Decision:
-- Introduce metricsservice as an independent bounded context.
+- Introduce metricservice as an independent bounded context.
 
 Rationale:
 - Keeps single responsibility and isolates analytical aggregation logic.
@@ -504,7 +516,7 @@ Failure behavior:
 
 Schema:
 
-- metrics_schema
+- metric_schema
 
 Tables:
 

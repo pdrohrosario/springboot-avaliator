@@ -1,17 +1,20 @@
-# Copilot Onboarding Instructions
+# Repository Onboarding & AI Agent Instructions
 
-These instructions are the repository onboarding source of truth for coding agents. Use them first and only search the repository when this file is incomplete or proven outdated.
+> [!IMPORTANT]
+> **MANDATORY FIRST-LOAD RULE:** This document is the absolute first source of truth and entry point that must be loaded, read, and validated by any AI agent or coding assistant before starting any task or executing any command in this repository. All other specialized prompts and agent definitions inherit from these global instructions.
+
+These instructions are the repository onboarding source of truth for AI agents. Use them first and only search the repository when this file is incomplete or proven outdated.
 
 ## Source Of Truth In This Repo
 
 Always align changes with these prompt files:
-- [prompts/prompt-general-rules.txt](./prompts/prompt-general-rules.txt)
-- [prompts/prompt-coding-commands.txt](./prompts/prompt-coding-commands.txt)
-- [prompts/prompt-automated-tests.txt](./prompts/prompt-automated-tests.txt)
-- [prompts/prompt-software-architecture.txt](./prompts/prompt-software-architecture.txt)
-- [prompts/prompt-local-infra-automation.txt](./prompts/prompt-local-infra-automation.txt)
-- [prompts/prompt-project-foundations.txt](./prompts/prompt-project-foundations.txt)
-- [prompts/prompt-readme-from-foundations.txt](./prompts/prompt-readme-from-foundations.txt)
+- [prompts/instructions-general-rules.md](./prompts/instructions-general-rules.md)
+- [prompts/instructions-coding-commands.md](./prompts/instructions-coding-commands.md)
+- [prompts/instructions-automated-tests.md](./prompts/instructions-automated-tests.md)
+- [prompts/instructions-software-architecture.md](./prompts/instructions-software-architecture.md)
+- [prompts/instructions-local-infra-automation.md](./prompts/instructions-local-infra-automation.md)
+- [prompts/instructions-project-foundations.md](./prompts/instructions-project-foundations.md)
+- [prompts/instructions-readme-from-foundations.md](./prompts/instructions-readme-from-foundations.md)
 
 Priority rules to apply on every task:
 - Keep scope minimal, safe, idempotent.

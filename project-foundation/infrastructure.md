@@ -286,29 +286,29 @@ docker build -t feedbackservice:latest ./feedbackservice
 
 ---
 
-## Planned Infrastructure Evolution (metricsservice)
+## Planned Infrastructure Evolution (metricservice)
 
-When metricsservice is implemented:
+When metricservice is implemented:
 
 Compose additions:
 
 - Kafka broker container (and optional Zookeeper/KRaft).
-- metricsservice container (new port, depends on postgres + kafka).
+- metricservice container (new port, depends on postgres + kafka).
 - Topic provisioning for `ReviewCreated v1`.
 
 Kubernetes additions:
 
 - Kafka broker deployment and service.
-- metricsservice deployment, configmap, and service.
+- metricservice deployment, configmap, and service.
 - Ingress rule for `/metrics` path.
-- metricsservice readiness must verify DB connectivity and broker consumption readiness.
-- metricsservice liveness must detect stuck consumer conditions.
+- metricservice readiness must verify DB connectivity and broker consumption readiness.
+- metricservice liveness must detect stuck consumer conditions.
 
 CI/CD additions:
 
-- Add metricsservice to parallel build and test stages.
-- Add metricsservice Docker image build and push.
-- Add metricsservice K8s deploy with rollout status.
+- Add metricservice to parallel build and test stages.
+- Add metricservice Docker image build and push.
+- Add metricservice K8s deploy with rollout status.
 
 Monitoring requirements:
 

@@ -5,6 +5,7 @@ import com.project.feedbackservice.review.application.mapper.ReviewUseCaseMapper
 import com.project.feedbackservice.review.application.output.CreateReviewOutput;
 import com.project.feedbackservice.review.application.ports.input.CreateReview;
 import com.project.feedbackservice.review.application.ports.output.FindProductById;
+import com.project.feedbackservice.review.application.ports.output.PublishReviewCreatedEvent;
 import com.project.feedbackservice.review.application.ports.output.SaveReview;
 import com.project.feedbackservice.review.domain.ProductId;
 import com.project.feedbackservice.review.domain.ProductIdIsNotValidException;
@@ -17,10 +18,12 @@ public class CreateReviewUseCase implements CreateReview {
 
     private final SaveReview saveReview;
     private final FindProductById findProductById;
+    private final PublishReviewCreatedEvent publishReviewCreatedEvent;
 
-    public CreateReviewUseCase(SaveReview saveReview, FindProductById findProductById) {
+    public CreateReviewUseCase(SaveReview saveReview, FindProductById findProductById, PublishReviewCreatedEvent publishReviewCreatedEvent) {
         this.saveReview = saveReview;
         this.findProductById = findProductById;
+        this.publishReviewCreatedEvent = publishReviewCreatedEvent;
     }
 
     @Override
@@ -31,6 +34,7 @@ public class CreateReviewUseCase implements CreateReview {
         Review review = Review.create(productId, input.rating(), input.comment());
 
         review = saveReview.execute(review);
+        publishReviewCreatedEvent.publish(review);
 
         return ReviewUseCaseMapper.toCreateOutput(review);
     }
