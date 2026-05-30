@@ -4,6 +4,7 @@ import com.project.feedbackservice.review.application.input.CreateReviewInput;
 import com.project.feedbackservice.review.application.mapper.ReviewUseCaseMapper;
 import com.project.feedbackservice.review.application.output.CreateReviewOutput;
 import com.project.feedbackservice.review.application.ports.output.FindProductById;
+import com.project.feedbackservice.review.application.ports.output.PublishReviewCreatedEvent;
 import com.project.feedbackservice.review.application.ports.output.SaveReview;
 import com.project.feedbackservice.review.application.useCases.CreateReviewUseCase;
 import com.project.feedbackservice.review.domain.*;
@@ -18,6 +19,8 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +34,9 @@ public class CreateReviewUseCaseTest {
 
     @Mock
     private FindProductById findProductById;
+
+    @Mock
+    private PublishReviewCreatedEvent publishReviewCreatedEvent;
 
     Review review;
 
@@ -59,6 +65,7 @@ public class CreateReviewUseCaseTest {
         //Assert
         assertNotNull(response);
         assertEquals(createOutput, response);
+        verify(publishReviewCreatedEvent).publish(any(Review.class));
     }
 
     @Test
@@ -74,6 +81,7 @@ public class CreateReviewUseCaseTest {
 
         //Assert
         assertEquals("Not found a Product with id: " + createInput.productId(), exception.getMessage());
+        verify(publishReviewCreatedEvent, never()).publish(any(Review.class));
 
     }
 
@@ -90,6 +98,7 @@ public class CreateReviewUseCaseTest {
 
         //Assert
         assertEquals("Invalid Product ID: null", exception.getMessage());
+        verify(publishReviewCreatedEvent, never()).publish(any());
     }
 
     @Test
@@ -106,6 +115,7 @@ public class CreateReviewUseCaseTest {
 
         //Assert
         assertEquals("Rating must be between 1 and 5", exception.getMessage());
+        verify(publishReviewCreatedEvent, never()).publish(any());
     }
 
     @Test
@@ -121,6 +131,7 @@ public class CreateReviewUseCaseTest {
 
         //Assert
         assertEquals("Rating must be between 1 and 5", exception.getMessage());
+        verify(publishReviewCreatedEvent, never()).publish(any());
     }
 
     @Test
@@ -137,6 +148,7 @@ public class CreateReviewUseCaseTest {
 
         //Assert
         assertEquals("Comment cannot be null, empty or exceed 500 characters", exception.getMessage());
+        verify(publishReviewCreatedEvent, never()).publish(any());
     }
 
     @Test
@@ -154,6 +166,7 @@ public class CreateReviewUseCaseTest {
 
         //Assert
         assertEquals("Comment cannot be null, empty or exceed 500 characters", exception.getMessage());
+        verify(publishReviewCreatedEvent, never()).publish(any());
     }
 
 }
