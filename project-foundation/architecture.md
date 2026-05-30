@@ -15,7 +15,7 @@ Services follow Hexagonal Architecture (Ports and Adapters) combined with DDD.
 |---|---|---|---|
 | catalogservice | 8081 | Implemented | Product lifecycle, catalog queries |
 | feedbackservice | 8882 | Implemented | Review lifecycle, product validation via Feign |
-| metricsservice | TBD | Planned (Early Scaffolding) | Asynchronous consolidation of product rating metrics (database migrations exist, production code planned) |
+| metricsservice | 8083 | Implemented | Asynchronous consolidation of product rating metrics |
 
 ## Implementation Status
 
@@ -27,7 +27,7 @@ Current state (as-is):
 - Migrations managed by Flyway per service.
 - Deployment: Docker Compose and Kubernetes (kind).
 - CI/CD: Jenkins pipeline covering build, test, image push, and K8s deploy for both services.
-- `metricsservice` is in an early scaffolding state: database schema and Flyway migration scripts exist, but production application code is not yet implemented.
+- `metricsservice` is fully implemented: consuming Kafka events, updating metrics idempotently, and serving the metrics query API.
 
 Target state (to-be):
 
@@ -306,7 +306,7 @@ Common base (same structure as catalogservice):
 
 ---
 
-## MetricService — Planned Architecture
+## MetricService — Detailed Architecture
 
 Business scope mapped to architecture:
 
