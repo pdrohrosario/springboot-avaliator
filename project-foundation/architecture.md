@@ -31,10 +31,6 @@ Current state (as-is):
 
 Target state (to-be):
 
-- Add metricservice as independent bounded context.
-- feedbackservice emits review-created events via Kafka.
-- metricservice consumes events and exposes aggregated metrics query API.
-- Add `metric_schema` to PostgreSQL.
 - Add Kafka broker to compose and K8s topology.
 
 ## Key Boundaries
@@ -185,6 +181,7 @@ com.project.feedbackservice.review
 │   ├── output/
 │   │   ├── adapter/           # SaveReviewAdapter
 │   │   │   └── product/       # Feign client + FindProductByIdAdapter
+│   │   ├── broker/            # KafkaReviewCreatedPublisher, ReviewCreatedEvent DTO
 │   │   ├── entities/          # JpaReview
 │   │   ├── repository/        # JpaReviewRepository, ReviewRepositoryImpl
 │   │   └── mapper/            # ReviewPersistenceMapper
@@ -239,10 +236,11 @@ Output ports:
 
 - `SaveReview` — persists a Review domain object.
 - `FindProductById` — validates product existence (returns boolean).
+- `PublishReviewCreatedEvent` — emits domain event when review is successfully created.
 
 Use case:
 
-- `CreateReviewUseCase` — parses and validates ProductId, checks product existence via FindProductById (Feign), creates Review, persists via SaveReview.
+- `CreateReviewUseCase` — parses and validates ProductId, checks product existence via FindProductById (Feign), creates Review, persists via SaveReview, and emits event via PublishReviewCreatedEvent.
 
 DTOs (records):
 
@@ -276,6 +274,11 @@ Feign integration:
 - `CustomFeignErrorDecoder` — maps HTTP status to domain-relevant exceptions (400→IllegalArgument, 404→ResourceNotFound, 5xx→ApiIntegration).
 - `FeignClientConfiguration` — registers the custom error decoder.
 
+Kafka integration:
+
+- `KafkaReviewCreatedPublisher` — implements PublishReviewCreatedEvent using `KafkaTemplate`.
+- `ReviewCreatedEvent` — the outgoing DTO representing the event payload.
+
 Config:
 
 - `CustomExceptionHandler` (@RestControllerAdvice) — handles MethodArgumentNotValidException (400), ProductNotFoundException (404), IllegalArgumentException (400), ProductIdIsNotValidException (400), ApiIntegrationException (503).
@@ -298,10 +301,10 @@ Common base (same structure as catalogservice):
 5. If product not found, `ProductNotFoundException` (404) is returned.
 6. If catalogservice is unreachable, `ApiIntegrationException` (503) is returned.
 
-### Planned: feedbackservice → metricservice (Kafka event)
+### Current: feedbackservice → metricservice (Kafka event)
 
-1. After review creation, feedbackservice publishes `ReviewCreated v1` event to Kafka topic.
-2. metricservice consumes the event asynchronously.
+1. After review creation, feedbackservice publishes `ReviewCreated v1` event to the `review-created` Kafka topic.
+2. metricservice consumes the event asynchronously via `KafkaReviewCreatedListener`.
 3. metricservice updates pre-computed `ProductMetrics` aggregate idempotently.
 
 ---
